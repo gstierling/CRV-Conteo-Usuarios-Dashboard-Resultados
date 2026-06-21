@@ -317,30 +317,36 @@ function buildChartsGrid(circuitos){
   const grid = document.getElementById("chartsGrid");
   grid.innerHTML = "";
 
-  INDICATORS.forEach(ind => {
+  circuitos.forEach((circuito, i) => {
     const card = document.createElement("div");
     card.className = "card";
+    const safeId = `c${i}`;
     card.innerHTML = `
       <div class="card-head">
-        <div class="card-title">${ind.label}</div>
+        <div class="card-title"><span class="dotc" style="background:${colorFor(i)}; display:inline-block; margin-right:8px;"></span>${circuito}</div>
       </div>
-      <div class="card-sub" style="margin-bottom:10px;">${ind.desc}</div>
-      <div class="chart-box"><canvas id="chart_${ind.key}"></canvas></div>
-      <div class="legend" id="legend_${ind.key}"></div>
+      <div class="card-sub" style="margin-bottom:10px;">Reparto de afluencia estimada por período horario (A–E)</div>
+      <div class="chart-box"><canvas id="chart_${safeId}"></canvas></div>
+      <div class="legend" id="legend_${safeId}"></div>
     `;
     grid.appendChild(card);
   });
 }
 
+const PERIOD_COLORS = { A:"#f97316", B:"#00d4aa", C:"#60a5fa", D:"#e879f9", E:"#facc15" };
+
 function renderCharts(resultado, circuitos){
-  INDICATORS.forEach(ind => {
-    const ctx = document.getElementById(`chart_${ind.key}`);
-    const legendEl = document.getElementById(`legend_${ind.key}`);
-    const data = circuitos.map(c => resultado[c][ind.key]);
-    const colors = circuitos.map((_, i) => colorFor(i));
+  circuitos.forEach((circuito, i) => {
+    const safeId = `c${i}`;
+    const ctx = document.getElementById(`chart_${safeId}`);
+    const legendEl = document.getElementById(`legend_${safeId}`);
+    if (!ctx) return;
+
+    const data = INDICATORS.map(ind => resultado[circuito][ind.key]);
+    const colors = INDICATORS.map(ind => PERIOD_COLORS[ind.key]);
     const total = data.reduce((a,b)=>a+b,0);
 
-    if (charts[ind.key]) charts[ind.key].destroy();
+    if (charts[safeId]) charts[safeId].destroy();
 
     if (total === 0){
       ctx.parentElement.innerHTML = `<div class="empty-state">Sin datos suficientes aún</div>`;
@@ -348,10 +354,10 @@ function renderCharts(resultado, circuitos){
       return;
     }
 
-    charts[ind.key] = new Chart(ctx, {
+    charts[safeId] = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: circuitos,
+        labels: INDICATORS.map(ind => ind.label),
         datasets: [{
           data: data,
           backgroundColor: colors,
@@ -378,8 +384,8 @@ function renderCharts(resultado, circuitos){
       }
     });
 
-    legendEl.innerHTML = circuitos.map((c,i) => `
-      <span><span class="swatch" style="background:${colorFor(i)}"></span>${c}: <span style="color:var(--text-dim); font-weight:600;">${data[i].toLocaleString('es-CL')}</span></span>
+    legendEl.innerHTML = INDICATORS.map(ind => `
+      <span><span class="swatch" style="background:${PERIOD_COLORS[ind.key]}"></span>${ind.key}: <span style="color:var(--text-dim); font-weight:600;">${resultado[circuito][ind.key].toLocaleString('es-CL')}</span></span>
     `).join("");
   });
 }
