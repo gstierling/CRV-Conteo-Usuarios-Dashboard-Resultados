@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRV · Conteos por Jornada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0d1117;
+    --bg-card:#161b22;
+    --border:#21262d;
+    --orange:#f97316;
+    --teal:#00d4aa;
+    --text:#ffffff;
+    --text-dim:#8b949e;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Nunito', sans-serif;
+    font-feature-settings:"zero" 0;
+    min-height:100vh;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:32px 32px;
+  }
+  .wrap{max-width:1200px; margin:0 auto; padding:28px 20px 60px;}
+
+  header{text-align:center; margin-bottom:8px;}
+  .live{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(0,212,170,0.1);
+    border:1px solid rgba(0,212,170,0.3);
+    color:var(--teal);
+    font-weight:700; font-size:12px; letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:6px 14px; border-radius:999px;
+    margin-bottom:14px;
+  }
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--teal); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,212,170,0.6);}70%{box-shadow:0 0 0 8px rgba(0,212,170,0);}100%{box-shadow:0 0 0 0 rgba(0,212,170,0);}}
+
+  h1{font-size:clamp(26px,4vw,38px); font-weight:900; letter-spacing:-0.01em;}
+  .subtitle{color:var(--text-dim); font-weight:600; font-size:14px; margin-top:6px;}
+  .date{color:var(--orange); font-weight:800; font-size:20px; margin-top:10px;}
+
+  .formula-band{
+    margin:28px 0 8px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px 20px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .formula-band b{color:var(--text);}
+  .formula-band code{
+    background:rgba(249,115,22,0.08);
+    color:var(--orange);
+    padding:1px 6px;
+    border-radius:6px;
+    font-weight:700;
+  }
+
+  .meta-row{
+    display:flex; justify-content:center; gap:28px; flex-wrap:wrap;
+    margin:22px 0 6px;
+  }
+  .meta-item{text-align:center;}
+  .meta-item .num{font-size:30px; font-weight:900; color:var(--orange);}
+  .meta-item .lbl{font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); font-weight:700; margin-top:2px;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(330px,1fr));
+    gap:18px;
+    margin-top:26px;
+  }
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+  }
+  .card-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;}
+  .card-title{font-size:16px; font-weight:800; text-transform:uppercase; letter-spacing:0.03em;}
+  .card-sub{font-size:12px; color:var(--text-dim); font-weight:600;}
+  .chart-box{position:relative; height:230px;}
+  .legend{
+    display:flex; flex-wrap:wrap; gap:8px 14px; justify-content:center;
+    margin-top:14px; font-size:12.5px; font-weight:700;
+  }
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .swatch{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  .table-card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px;
+    margin-top:24px;
+    overflow-x:auto;
+  }
+  table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:640px;}
+  th, td{padding:10px 12px; text-align:right; white-space:nowrap;}
+  th{
+    color:var(--text-dim); font-size:11px; text-transform:uppercase;
+    letter-spacing:0.05em; border-bottom:1px solid var(--border);
+  }
+  th:first-child, td:first-child{text-align:left;}
+  td{border-bottom:1px solid rgba(255,255,255,0.04); font-weight:700;}
+  tr:last-child td{border-bottom:none;}
+  .circuito-tag{
+    display:inline-flex; align-items:center; gap:8px; font-weight:800;
+  }
+  .dotc{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+
+  .empty-state{
+    text-align:center; color:var(--text-dim);
+    padding:50px 20px; font-weight:600; font-size:14px;
+  }
+
+  footer{
+    display:flex; justify-content:center; gap:14px; margin-top:34px; flex-wrap:wrap;
+  }
+  .btn{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-family:inherit; font-weight:800; font-size:13px;
+    text-decoration:none;
+    padding:11px 22px; border-radius:10px;
+    transition:border-color .15s, transform .15s;
+  }
+  .btn:hover{border-color:var(--orange); transform:translateY(-1px);}
+  .btn.primary{background:var(--orange); border-color:var(--orange); color:#1a0d00;}
+
+  .updated-note{
+    text-align:center; color:var(--text-dim); font-size:11.5px;
+    margin-top:18px; font-weight:600;
+  }
+
+  @media (max-width:520px){
+    .meta-row{gap:18px;}
+    .meta-item .num{font-size:24px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="live"><span class="dot"></span> En vivo · actualiza cada 30s</div>
+    <h1>CRV · Conteos por Jornada</h1>
+    <div class="subtitle">Estimación de afluencia por circuito (factor ×6 sobre conteo de 10 minutos)</div>
+    <div class="date" id="fechaHoy">—</div>
+  </header>
+
+  <div class="formula-band" id="formulaBand">
+    Cargando metodología de cálculo…
+  </div>
+
+  <div class="meta-row">
+    <div class="meta-item"><div class="num" id="totalRegistros">—</div><div class="lbl">Jornadas registradas</div></div>
+    <div class="meta-item"><div class="num" id="totalCircuitos">—</div><div class="lbl">Circuitos con datos</div></div>
+    <div class="meta-item"><div class="num" id="ultimaFecha">—</div><div class="lbl">Último conteo</div></div>
+  </div>
+
+  <div class="grid" id="chartsGrid">
+    <!-- cards de gráficos generadas por JS -->
+  </div>
+
+  <div class="table-card">
+    <table id="resumenTable">
+      <thead>
+        <tr>
+          <th>Circuito</th>
+          <th>A · 9-10h</th>
+          <th>B · 10-11h</th>
+          <th>C · 11-12h</th>
+          <th>D · 12-13h</th>
+          <th>E · 13-14h</th>
+        </tr>
+      </thead>
+      <tbody id="resumenBody">
+        <tr><td colspan="6" class="empty-state">Cargando datos…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="updated-note" id="updatedNote"></div>
+
+  <footer>
+    <a class="btn primary" href="https://docs.google.com/spreadsheets/d/1txnN8wXrYpBtD9H23n7IUwSP8dfsyhe6zrd47d_3GH4/edit" target="_blank" rel="noopener">BBDD</a>
+  </footer>
+
+</div>
+
+<script>
+/* ============== CONFIG ============== */
+const SHEET_ID = "1txnN8wXrYpBtD9H23n7IUwSP8dfsyhe6zrd47d_3GH4";
+const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const REFRESH_MS = 30000;
+
+// Columnas (índice 0-based según orden real de la planilla)
+// A=0 timestamp, B=1 vigía, C=2 fecha conteo, D=3 circuito, E=4 esquina,
+// F=5 H 8:00(LB), G=6 M 8:00(LB),
+// H=7 H 9:00, I=8 M 9:00, J=9 H 10:00, K=10 M 10:00,
+// L=11 H 11:00, M=12 M 11:00, N=13 H 12:00, O=14 M 12:00,
+// P=15 H 13:00, Q=16 M 13:00, R=17 H 13:50, S=18 M 13:50
+const COL = {
+  circuito: 3,
+  fechaConteo: 2,
+  h9:7, m9:8, h10:9, m10:10,
+  h11:11, m11:12, h12:13, m12:14,
+  h13:15, m13:16, h1350:17, m1350:18
+};
+
+const CIRCUIT_COLORS = ["#f97316","#00d4aa","#60a5fa","#e879f9","#facc15","#fb7185","#34d399","#a78bfa"];
+
+const INDICATORS = [
+  { key:"A", label:"A · Bloque 9:00–11:00",  desc:"6 × promedio( (H+I), (J+K) )", pair1:["h9","m9"],   pair2:["h10","m10"] },
+  { key:"B", label:"B · Bloque 10:00–12:00", desc:"6 × promedio( (J+K), (L+M) )", pair1:["h10","m10"], pair2:["h11","m11"] },
+  { key:"C", label:"C · Bloque 11:00–13:00", desc:"6 × promedio( (L+M), (N+O) )", pair1:["h11","m11"], pair2:["h12","m12"] },
+  { key:"D", label:"D · Bloque 12:00–14:00", desc:"6 × promedio( (N+O), (P+Q) )", pair1:["h12","m12"], pair2:["h13","m13"] },
+  { key:"E", label:"E · Bloque 13:00–14:00", desc:"6 × promedio( (P+Q), (R+S) )", pair1:["h13","m13"], pair2:["h1350","m1350"] },
+];
+
+let charts = {};
+
+/* ============== CSV PARSER (robusto, soporta comillas y saltos de línea internos) ============== */
+function parseCSV(text){
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    const next = text[i+1];
+
+    if (inQuotes){
+      if (c === '"' && next === '"'){ field += '"'; i++; }
+      else if (c === '"'){ inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"'){ inQuotes = true; }
+      else if (c === ','){ row.push(field); field = ""; }
+      else if (c === '\n'){ row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c === '\r'){ /* ignore */ }
+      else { field += c; }
+    }
+  }
+  if (field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 1 || (r[0] && r[0].trim() !== ""));
+}
+
+function toNum(v){
+  if (v === undefined || v === null) return 0;
+  const n = parseFloat(String(v).replace(",", ".").trim());
+  return isNaN(n) ? 0 : n;
+}
+
+/* ============== CÁLCULO ============== */
+function calcular(rows){
+  // rows: array de arrays (sin header)
+  const porCircuito = {}; // circuito -> { sumas de cada columna relevante, count }
+
+  rows.forEach(r => {
+    const circuito = (r[COL.circuito] || "").trim();
+    if (!circuito) return;
+
+    if (!porCircuito[circuito]){
+      porCircuito[circuito] = { count:0, h9:0,m9:0,h10:0,m10:0,h11:0,m11:0,h12:0,m12:0,h13:0,m13:0,h1350:0,m1350:0 };
+    }
+    const c = porCircuito[circuito];
+    c.count += 1;
+    c.h9    += toNum(r[COL.h9]);
+    c.m9    += toNum(r[COL.m9]);
+    c.h10   += toNum(r[COL.h10]);
+    c.m10   += toNum(r[COL.m10]);
+    c.h11   += toNum(r[COL.h11]);
+    c.m11   += toNum(r[COL.m11]);
+    c.h12   += toNum(r[COL.h12]);
+    c.m12   += toNum(r[COL.m12]);
+    c.h13   += toNum(r[COL.h13]);
+    c.m13   += toNum(r[COL.m13]);
+    c.h1350 += toNum(r[COL.h1350]);
+    c.m1350 += toNum(r[COL.m1350]);
+  });
+
+  const resultado = {}; // circuito -> { A, B, C, D, E }
+
+  Object.keys(porCircuito).forEach(circuito => {
+    const c = porCircuito[circuito];
+    resultado[circuito] = {};
+    INDICATORS.forEach(ind => {
+      const sum1 = c[ind.pair1[0]] + c[ind.pair1[1]];
+      const sum2 = c[ind.pair2[0]] + c[ind.pair2[1]];
+      const promedio = (sum1 + sum2) / 2;
+      resultado[circuito][ind.key] = Math.round(promedio * 6);
+    });
+  });
+
+  return { porCircuito, resultado };
+}
+
+/* ============== RENDER ============== */
+function colorFor(idx){ return CIRCUIT_COLORS[idx % CIRCUIT_COLORS.length]; }
+
+function buildChartsGrid(circuitos){
+  const grid = document.getElementById("chartsGrid");
+  grid.innerHTML = "";
+
+  INDICATORS.forEach(ind => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="card-title">${ind.label}</div>
+      </div>
+      <div class="card-sub" style="margin-bottom:10px;">${ind.desc}</div>
+      <div class="chart-box"><canvas id="chart_${ind.key}"></canvas></div>
+      <div class="legend" id="legend_${ind.key}"></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderCharts(resultado, circuitos){
+  INDICATORS.forEach(ind => {
+    const ctx = document.getElementById(`chart_${ind.key}`);
+    const legendEl = document.getElementById(`legend_${ind.key}`);
+    const data = circuitos.map(c => resultado[c][ind.key]);
+    const colors = circuitos.map((_, i) => colorFor(i));
+    const total = data.reduce((a,b)=>a+b,0);
+
+    if (charts[ind.key]) charts[ind.key].destroy();
+
+    if (total === 0){
+      ctx.parentElement.innerHTML = `<div class="empty-state">Sin datos suficientes aún</div>`;
+      legendEl.innerHTML = "";
+      return;
+    }
+
+    charts[ind.key] = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: circuitos,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderColor: '#161b22',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display:false },
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const val = item.raw;
+                const pct = total > 0 ? ((val/total)*100).toFixed(1) : 0;
+                return ` ${item.label}: ${val.toLocaleString('es-CL')} (${pct}%)`;
+              }
+            }
+          }
+        },
+        cutout: '62%'
+      }
+    });
+
+    legendEl.innerHTML = circuitos.map((c,i) => `
+      <span><span class="swatch" style="background:${colorFor(i)}"></span>${c}: <span style="color:var(--text-dim); font-weight:600;">${data[i].toLocaleString('es-CL')}</span></span>
+    `).join("");
+  });
+}
+
+function renderTable(resultado, circuitos){
+  const body = document.getElementById("resumenBody");
+  if (circuitos.length === 0){
+    body.innerHTML = `<tr><td colspan="6" class="empty-state">Aún no hay registros</td></tr>`;
+    return;
+  }
+  body.innerHTML = circuitos.map((c,i) => `
+    <tr>
+      <td><span class="circuito-tag"><span class="dotc" style="background:${colorFor(i)}"></span>${c}</span></td>
+      <td>${resultado[c].A.toLocaleString('es-CL')}</td>
+      <td>${resultado[c].B.toLocaleString('es-CL')}</td>
+      <td>${resultado[c].C.toLocaleString('es-CL')}</td>
+      <td>${resultado[c].D.toLocaleString('es-CL')}</td>
+      <td>${resultado[c].E.toLocaleString('es-CL')}</td>
+    </tr>
+  `).join("");
+}
+
+function renderFormulaBand(){
+  document.getElementById("formulaBand").innerHTML = `
+    <b>Metodología:</b> cada indicador estima la afluencia horaria proyectada a partir de un conteo puntual de 10 minutos,
+    multiplicado por 6 (extrapolación a 1 hora) sobre el promedio de dos ventanas consecutivas de Hombres + Mujeres.
+    Ej. <code>A = 6 × [(H+I) + (J+K)] / 2</code>, donde H/I = 9:00–9:10 y J/K = 10:00–10:10 (Hombres/Mujeres). Cálculo agregado por circuito (columna D).
+  `;
+}
+
+/* ============== FETCH & ORQUESTACIÓN ============== */
+async function cargarDatos(){
+  try {
+    const res = await fetch(CSV_URL + "&_=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    const allRows = parseCSV(text);
+
+    // primera fila = headers
+    const dataRows = allRows.slice(1).filter(r => (r[COL.circuito] || "").trim() !== "");
+
+    const { resultado } = calcular(dataRows);
+    const circuitos = Object.keys(resultado).sort();
+
+    if (circuitos.length === 0){
+      document.getElementById("chartsGrid").innerHTML = `<div class="empty-state" style="grid-column:1/-1;">Aún no hay jornadas registradas en la planilla.</div>`;
+      renderTable(resultado, []);
+    } else {
+      buildChartsGrid();
+      renderCharts(resultado, circuitos);
+      renderTable(resultado, circuitos);
+    }
+
+    document.getElementById("totalRegistros").textContent = dataRows.length.toLocaleString('es-CL');
+    document.getElementById("totalCircuitos").textContent = circuitos.length;
+
+    let ultima = "—";
+    if (dataRows.length > 0){
+      const fechas = dataRows.map(r => (r[COL.fechaConteo]||"").trim()).filter(Boolean);
+      if (fechas.length) ultima = fechas[fechas.length - 1];
+    }
+    document.getElementById("ultimaFecha").textContent = ultima;
+
+    document.getElementById("updatedNote").textContent =
+      "Última actualización: " + new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+
+  } catch(err){
+    console.error("Error cargando datos:", err);
+    document.getElementById("chartsGrid").innerHTML =
+      `<div class="empty-state" style="grid-column:1/-1;">No se pudo cargar la planilla. Si estás viendo esto en GitHub Pages, verifica que la hoja esté compartida públicamente. (${err.message})</div>`;
+  }
+}
+
+function setFecha(){
+  const hoy = new Date();
+  document.getElementById("fechaHoy").textContent = hoy.toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+renderFormulaBand();
+setFecha();
+cargarDatos();
+setInterval(cargarDatos, REFRESH_MS);
+</script>
+</body>
+</html>
