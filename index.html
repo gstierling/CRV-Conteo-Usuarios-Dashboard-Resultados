@@ -116,6 +116,14 @@
   th:first-child, td:first-child{text-align:left;}
   td{border-bottom:1px solid rgba(255,255,255,0.04); font-weight:700;}
   tr:last-child td{border-bottom:none;}
+  .col-total{color:var(--orange); font-weight:900;}
+  tr.row-total td{
+    border-top:2px solid var(--border);
+    color:var(--text);
+    font-weight:900;
+    background:rgba(255,255,255,0.02);
+  }
+  tr.row-total td.col-total{color:var(--orange);}
   .circuito-tag{
     display:inline-flex; align-items:center; gap:8px; font-weight:800;
   }
@@ -186,10 +194,11 @@
           <th>C · 11-12h</th>
           <th>D · 12-13h</th>
           <th>E · 13-14h</th>
+          <th>Total</th>
         </tr>
       </thead>
       <tbody id="resumenBody">
-        <tr><td colspan="6" class="empty-state">Cargando datos…</td></tr>
+        <tr><td colspan="7" class="empty-state">Cargando datos…</td></tr>
       </tbody>
     </table>
   </div>
@@ -335,6 +344,32 @@ function buildChartsGrid(circuitos){
 
 const PERIOD_COLORS = { A:"#f97316", B:"#00d4aa", C:"#60a5fa", D:"#e879f9", E:"#facc15" };
 
+// Plugin Chart.js: dibuja el total en el centro del donut
+const centerTotalPlugin = {
+  id: 'centerTotal',
+  afterDraw(chart){
+    const total = chart.config._centerTotalValue;
+    if (total === undefined) return;
+    const { ctx, chartArea } = chart;
+    const cx = (chartArea.left + chartArea.right) / 2;
+    const cy = (chartArea.top + chartArea.bottom) / 2;
+
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.font = "800 22px Nunito, sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(total.toLocaleString('es-CL'), cx, cy - 9);
+
+    ctx.font = "700 11px Nunito, sans-serif";
+    ctx.fillStyle = "#8b949e";
+    ctx.fillText("TOTAL", cx, cy + 13);
+
+    ctx.restore();
+  }
+};
+
 function renderCharts(resultado, circuitos){
   circuitos.forEach((circuito, i) => {
     const safeId = `c${i}`;
@@ -381,8 +416,11 @@ function renderCharts(resultado, circuitos){
           }
         },
         cutout: '62%'
-      }
+      },
+      plugins: [centerTotalPlugin]
     });
+    charts[safeId].config._centerTotalValue = total;
+    charts[safeId].update();
 
     legendEl.innerHTML = INDICATORS.map(ind => `
       <span><span class="swatch" style="background:${PERIOD_COLORS[ind.key]}"></span>${ind.key}: <span style="color:var(--text-dim); font-weight:600;">${resultado[circuito][ind.key].toLocaleString('es-CL')}</span></span>
@@ -390,13 +428,18 @@ function renderCharts(resultado, circuitos){
   });
 }
 
+
 function renderTable(resultado, circuitos){
   const body = document.getElementById("resumenBody");
   if (circuitos.length === 0){
-    body.innerHTML = `<tr><td colspan="6" class="empty-state">Aún no hay registros</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="empty-state">Aún no hay registros</td></tr>`;
     return;
   }
-  body.innerHTML = circuitos.map((c,i) => `
+
+  // Filas por circuito + total horizontal
+  let rowsHtml = circuitos.map((c,i) => {
+    const rowTotal = INDICATORS.reduce((acc, ind) => acc + resultado[c][ind.key], 0);
+    return `
     <tr>
       <td><span class="circuito-tag"><span class="dotc" style="background:${colorFor(i)}"></span>${c}</span></td>
       <td>${resultado[c].A.toLocaleString('es-CL')}</td>
@@ -404,8 +447,29 @@ function renderTable(resultado, circuitos){
       <td>${resultado[c].C.toLocaleString('es-CL')}</td>
       <td>${resultado[c].D.toLocaleString('es-CL')}</td>
       <td>${resultado[c].E.toLocaleString('es-CL')}</td>
-    </tr>
-  `).join("");
+      <td class="col-total">${rowTotal.toLocaleString('es-CL')}</td>
+    </tr>`;
+  }).join("");
+
+  // Fila de totales verticales (suma por columna) + gran total
+  const colTotals = {};
+  INDICATORS.forEach(ind => {
+    colTotals[ind.key] = circuitos.reduce((acc, c) => acc + resultado[c][ind.key], 0);
+  });
+  const grandTotal = Object.values(colTotals).reduce((a,b)=>a+b,0);
+
+  rowsHtml += `
+    <tr class="row-total">
+      <td>Total</td>
+      <td>${colTotals.A.toLocaleString('es-CL')}</td>
+      <td>${colTotals.B.toLocaleString('es-CL')}</td>
+      <td>${colTotals.C.toLocaleString('es-CL')}</td>
+      <td>${colTotals.D.toLocaleString('es-CL')}</td>
+      <td>${colTotals.E.toLocaleString('es-CL')}</td>
+      <td class="col-total">${grandTotal.toLocaleString('es-CL')}</td>
+    </tr>`;
+
+  body.innerHTML = rowsHtml;
 }
 
 function renderFormulaBand(){
