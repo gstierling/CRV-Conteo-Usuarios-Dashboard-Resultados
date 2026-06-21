@@ -434,7 +434,7 @@ async function cargarDatos(){
       document.getElementById("chartsGrid").innerHTML = `<div class="empty-state" style="grid-column:1/-1;">Aún no hay jornadas registradas en la planilla.</div>`;
       renderTable(resultado, []);
     } else {
-      buildChartsGrid();
+      buildChartsGrid(circuitos);
       renderCharts(resultado, circuitos);
       renderTable(resultado, circuitos);
     }
