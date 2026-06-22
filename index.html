@@ -51,11 +51,10 @@
   .totales-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:24px 0 4px;}
   .total-blk{
     background:var(--bg-card);border:1px solid var(--border);
-    border-radius:14px;padding:18px 28px;text-align:center;flex:1;min-width:200px;max-width:320px;
+    border-radius:14px;padding:28px 44px;text-align:center;flex:1;min-width:220px;max-width:380px;
   }
-  .total-blk .lbl{font-size:12px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-dim);font-weight:800;}
-  .total-blk .num{font-size:36px;font-weight:900;color:var(--orange);margin-top:6px;}
-  .total-blk .sub{font-size:13px;color:var(--text-dim);font-weight:700;margin-top:4px;}
+  .total-blk .lbl{font-size:13px;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-dim);font-weight:900;}
+  .total-blk .num{font-size:72px;font-weight:900;color:var(--orange);margin-top:8px;line-height:1;}
 
   /* DONUTS GRID */
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-top:28px;}
@@ -128,19 +127,10 @@
     <div class="total-blk">
       <div class="lbl">CRV Santiago</div>
       <div class="num" id="totalStgo">—</div>
-      <div class="sub">suma tramos A–E · sin Viña del Mar</div>
     </div>
     <div class="total-blk">
       <div class="lbl">CRV Viña del Mar</div>
       <div class="num" id="totalVina">—</div>
-      <div class="sub">último domingo registrado</div>
-    </div>
-  </div>
-
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-num" id="totalCircuitos">—</div>
-      <div class="kpi-lbl">Circuitos Informados</div>
     </div>
   </div>
 
@@ -149,9 +139,15 @@
   </div>
 
   <!-- Gráfico asistencia comparada -->
-  <div class="section-title">Asistencia comparada con jornada anterior</div>
+  <div class="section-title">Asistencia percibida comparada con jornada anterior</div>
   <div class="chart-bar-box">
     <div class="chart-bar-inner"><canvas id="chartAsistencia"></canvas></div>
+  </div>
+
+  <!-- Gráfico distribución por sexo -->
+  <div class="section-title">Asistencia por sexo</div>
+  <div class="chart-bar-box">
+    <div class="chart-bar-inner" style="height:320px;"><canvas id="chartSexo"></canvas></div>
   </div>
 
   <!-- Tablas -->
@@ -228,17 +224,18 @@ const C = {
 };
 
 const TRAMOS = [
-  { key:"A", label:"9:00–11:00",  hCol:"h9",   mCol:"m9",   h2Col:"h10",  m2Col:"m10"  },
-  { key:"B", label:"10:00–12:00", hCol:"h10",  mCol:"m10",  h2Col:"h11",  m2Col:"m11"  },
-  { key:"C", label:"11:00–13:00", hCol:"h11",  mCol:"m11",  h2Col:"h12",  m2Col:"m12"  },
-  { key:"D", label:"12:00–14:00", hCol:"h12",  mCol:"m12",  h2Col:"h13",  m2Col:"m13"  },
+  { key:"A", label:"9:00–10:00",  hCol:"h9",   mCol:"m9",   h2Col:"h10",  m2Col:"m10"  },
+  { key:"B", label:"10:00–11:00", hCol:"h10",  mCol:"m10",  h2Col:"h11",  m2Col:"m11"  },
+  { key:"C", label:"11:00–12:00", hCol:"h11",  mCol:"m11",  h2Col:"h12",  m2Col:"m12"  },
+  { key:"D", label:"12:00–13:00", hCol:"h12",  mCol:"m12",  h2Col:"h13",  m2Col:"m13"  },
   { key:"E", label:"13:00–14:00", hCol:"h13",  mCol:"m13",  h2Col:"h1350",m2Col:"m1350"},
 ];
 const PERIOD_COLORS = {A:"#f97316",B:"#00d4aa",C:"#60a5fa",D:"#e879f9",E:"#facc15"};
 const CIRCUIT_COLORS = ["#f97316","#00d4aa","#60a5fa","#e879f9","#facc15","#fb7185","#34d399","#a78bfa"];
 
 let charts = {};
-let chartAsistencia = null;
+let chartAsistencia=null;
+let chartSexo=null;
 
 /* ===== UTILIDADES ===== */
 function colorFor(i){ return CIRCUIT_COLORS[i % CIRCUIT_COLORS.length]; }
@@ -290,7 +287,8 @@ function mismaFecha(a,b){
   return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
 }
 function formatFechaLarga(d){
-  return d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const str=d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return str.charAt(0).toUpperCase()+str.slice(1);
 }
 function sumaRaw(row){
   return [C.h8,C.m8,C.h9,C.m9,C.h10,C.m10,C.h11,C.m11,C.h12,C.m12,C.h13,C.m13,C.h1350,C.m1350]
@@ -354,15 +352,18 @@ const centerTotalPlugin={
     const{ctx,chartArea}=chart;
     const cx=(chartArea.left+chartArea.right)/2;
     const cy=(chartArea.top+chartArea.bottom)/2;
+    const radius=(chartArea.right-chartArea.left)/2;
+    // Tamaño de fuente adaptativo al radio del donut
+    const fontSize=Math.max(22, Math.round(radius*0.38));
     ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    ctx.font='900 28px Nunito, sans-serif';
+    ctx.font=`900 ${fontSize}px Nunito, sans-serif`;
     ctx.fillStyle='#ffffff';
-    ctx.fillText(val.toLocaleString('es-CL'),cx,cy-11);
-    ctx.font='700 12px Nunito, sans-serif';
+    ctx.fillText(val.toLocaleString('es-CL'),cx,cy-6);
+    ctx.font='700 11px Nunito, sans-serif';
     ctx.fillStyle='#8b949e';
-    ctx.fillText('TOTAL',cx,cy+14);
+    ctx.fillText('TOTAL',cx,cy+fontSize*0.72);
     ctx.restore();
   }
 };
@@ -438,13 +439,15 @@ function renderDonuts(filteredRows){
 
 /* ===== GRÁFICO ASISTENCIA ===== */
 function renderAsistencia(filteredRows){
+  // Agrupar: respuesta -> lista de circuitos
   const conteo={};
   filteredRows.forEach(r=>{
     const v=(r[C.asistencia]||'Sin respuesta').trim();
-    conteo[v]=(conteo[v]||0)+1;
+    if(!conteo[v]) conteo[v]=[];
+    conteo[v].push((r[C.circuito]||'').trim());
   });
   const labels=Object.keys(conteo);
-  const data=labels.map(l=>conteo[l]);
+  const data=labels.map(l=>conteo[l].length);
   const colors=['#f97316','#00d4aa','#60a5fa','#e879f9','#facc15','#fb7185'];
 
   const ctx=document.getElementById('chartAsistencia');
@@ -457,13 +460,18 @@ function renderAsistencia(filteredRows){
       datasets:[{
         data,
         backgroundColor:labels.map((_,i)=>colors[i%colors.length]),
-        borderRadius:8,
-        borderWidth:0
+        borderRadius:8,borderWidth:0
       }]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:(i)=>` ${i.raw} circuito(s)`}}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:(i)=>{
+          const circs=conteo[labels[i.dataIndex]]||[];
+          return [` ${i.raw} circuito(s):`, ...circs.map(c=>`  · ${c}`)];
+        }}}
+      },
       scales:{
         x:{ticks:{color:'#8b949e',font:{size:14,weight:'700',family:'Nunito'}},grid:{color:'rgba(255,255,255,0.04)'}},
         y:{ticks:{color:'#8b949e',font:{size:14,weight:'700',family:'Nunito'},stepSize:1},grid:{color:'rgba(255,255,255,0.07)'}}
@@ -472,13 +480,82 @@ function renderAsistencia(filteredRows){
   });
 }
 
-/* ===== TABLAS NUMÉRICAS ===== */
-function renderTablaGenerica(headId, bodyId, filteredRows, colPairs, titulo){
-  // colPairs: array de {label, cols:[colIndex,...]}  — suma de esas cols por tramo
-  // Para "total": todos los pares H+M
-  // Para "hombres": solo cols H
-  // Para "mujeres": solo cols M
+/* ===== GRÁFICO SEXO ===== */
+function renderSexo(filteredRows){
+  const ordenados=[...filteredRows].sort((a,b)=>{
+    const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
+    if(ca==='Viña del Mar') return 1;
+    if(cb==='Viña del Mar') return -1;
+    return ca.localeCompare(cb,'es');
+  });
 
+  const colsH=[C.h8,C.h9,C.h10,C.h11,C.h12,C.h13,C.h1350];
+  const colsM=[C.m8,C.m9,C.m10,C.m11,C.m12,C.m13,C.m1350];
+
+  const labels=ordenados.map(r=>(r[C.circuito]||'').trim());
+  const datH=ordenados.map(r=>colsH.reduce((acc,col)=>acc+toNum(r[col]),0));
+  const datM=ordenados.map(r=>colsM.reduce((acc,col)=>acc+toNum(r[col]),0));
+
+  // Agregar fila Total
+  labels.push('Total');
+  datH.push(datH.reduce((a,b)=>a+b,0));
+  datM.push(datM.reduce((a,b)=>a+b,0));
+
+  // Convertir a porcentajes para barras apiladas
+  const pctH=datH.map((h,i)=>{
+    const t=h+datM[i]; return t>0?Math.round(h/t*1000)/10:0;
+  });
+  const pctM=datM.map((m,i)=>{
+    const t=datH[i]+m; return t>0?Math.round(m/t*1000)/10:0;
+  });
+
+  const ctx=document.getElementById('chartSexo');
+  if(!ctx) return;
+  if(chartSexo) chartSexo.destroy();
+  chartSexo=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Hombres %',data:pctH,backgroundColor:'#60a5fa',borderRadius:0,borderWidth:0,stack:'s'},
+        {label:'Mujeres %', data:pctM,backgroundColor:'#e879f9',borderRadius:0,borderWidth:0,stack:'s'},
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          display:true,
+          labels:{color:'#ffffff',font:{size:14,weight:'700',family:'Nunito'},boxWidth:14}
+        },
+        tooltip:{callbacks:{
+          label:(i)=>{
+            const idx=i.dataIndex;
+            const isH=i.datasetIndex===0;
+            const abs=isH?datH[idx]:datM[idx];
+            return ` ${i.dataset.label}: ${i.raw}% (${abs.toLocaleString('es-CL')} conteos)`;
+          }
+        }}
+      },
+      scales:{
+        x:{
+          stacked:true,max:100,
+          ticks:{color:'#8b949e',font:{size:13,family:'Nunito'},callback:v=>v+'%'},
+          grid:{color:'rgba(255,255,255,0.07)'}
+        },
+        y:{
+          stacked:true,
+          ticks:{color:'#ffffff',font:{size:14,weight:'700',family:'Nunito'}},
+          grid:{color:'rgba(255,255,255,0.04)'}
+        }
+      }
+    }
+  });
+}
+
+/* ===== TABLAS NUMÉRICAS ===== */
+function renderTablaGenerica(headId, bodyId, filteredRows, colPairs){
   const circuitos=[...filteredRows].sort((a,b)=>{
     const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
     if(ca==='Viña del Mar') return 1;
@@ -486,19 +563,18 @@ function renderTablaGenerica(headId, bodyId, filteredRows, colPairs, titulo){
     return ca.localeCompare(cb,'es');
   });
 
-  // Headers
   const headEl=document.getElementById(headId);
   headEl.innerHTML='<th>Circuito</th>'+colPairs.map(p=>`<th>${p.label}</th>`).join('')+'<th>Total</th>';
 
-  // Calcular datos
+  const factor=colPairs[0]&&colPairs[0].factor?colPairs[0].factor:1;
+
   const rows=circuitos.map((row,i)=>{
     const circ=(row[C.circuito]||'').trim();
-    const vals=colPairs.map(p=>p.cols.reduce((acc,col)=>acc+toNum(row[col]),0));
+    const vals=colPairs.map(p=>Math.round(p.cols.reduce((acc,col)=>acc+toNum(row[col]),0)*factor));
     const rowTotal=vals.reduce((a,b)=>a+b,0);
     return{circ,vals,rowTotal,i};
   });
 
-  // Totales de columna
   const colTotals=colPairs.map((_,ci)=>rows.reduce((acc,r)=>acc+r.vals[ci],0));
   const grandTotal=colTotals.reduce((a,b)=>a+b,0);
 
@@ -518,24 +594,27 @@ function renderTablaGenerica(headId, bodyId, filteredRows, colPairs, titulo){
 }
 
 function renderTablas(filteredRows){
-  // Definir las columnas por tramo horario
-  // Total = H+M de cada ventana combinada
+  // Tramos de 1 hora proyectados (×6 sobre conteo de 10 min de cada ventana)
+  // Usamos la misma lógica de los donuts: promedio de dos ventanas consecutivas ×6
+  // Pero aquí mostramos cada ventana individual ×6 (no el promedio entre dos)
+  // para que la tabla refleje la asistencia de cada hora concreta
   const tramosTabla=[
-    {label:'9:00–9:10',  hCol:C.h9,   mCol:C.m9  },
-    {label:'10:00–10:10',hCol:C.h10,  mCol:C.m10 },
-    {label:'11:00–11:10',hCol:C.h11,  mCol:C.m11 },
-    {label:'12:00–12:10',hCol:C.h12,  mCol:C.m12 },
-    {label:'13:00–13:10',hCol:C.h13,  mCol:C.m13 },
-    {label:'13:50–14:00',hCol:C.h1350,mCol:C.m1350},
+    {label:'9:00–10:00',  hCol:C.h9,   mCol:C.m9   },
+    {label:'10:00–11:00', hCol:C.h10,  mCol:C.m10  },
+    {label:'11:00–12:00', hCol:C.h11,  mCol:C.m11  },
+    {label:'12:00–13:00', hCol:C.h12,  mCol:C.m12  },
+    {label:'13:00–14:00', hCol:C.h13,  mCol:C.m13  },
+    {label:'13:50–14:00', hCol:C.h1350,mCol:C.m1350},
   ];
 
-  const pairsTotal=tramosTabla.map(t=>({label:t.label, cols:[t.hCol,t.mCol]}));
-  const pairsH    =tramosTabla.map(t=>({label:t.label, cols:[t.hCol]}));
-  const pairsM    =tramosTabla.map(t=>({label:t.label, cols:[t.mCol]}));
+  // Para proyectar ×6: multiplicamos cada conteo bruto por 6
+  const pairsTotal=tramosTabla.map(t=>({label:t.label, cols:[t.hCol,t.mCol], factor:6}));
+  const pairsH    =tramosTabla.map(t=>({label:t.label, cols:[t.hCol],        factor:6}));
+  const pairsM    =tramosTabla.map(t=>({label:t.label, cols:[t.mCol],        factor:6}));
 
-  renderTablaGenerica('tablaTotalHead','tablaTotalBody',filteredRows,pairsTotal,'Total');
-  renderTablaGenerica('tablaHHead',   'tablaHBody',    filteredRows,pairsH,'Hombres');
-  renderTablaGenerica('tablaMHead',   'tablaMBody',    filteredRows,pairsM,'Mujeres');
+  renderTablaGenerica('tablaTotalHead','tablaTotalBody',filteredRows,pairsTotal);
+  renderTablaGenerica('tablaHHead',   'tablaHBody',    filteredRows,pairsH);
+  renderTablaGenerica('tablaMHead',   'tablaMBody',    filteredRows,pairsM);
 }
 
 /* ===== TABLAS COMENTARIOS ===== */
@@ -564,9 +643,6 @@ function renderComentarios(filteredRows){
 
 /* ===== KPIs / TOTALES ===== */
 function renderKPIs(filteredRows){
-  const circuitos=filteredRows.map(r=>(r[C.circuito]||'').trim()).filter(Boolean);
-  document.getElementById('totalCircuitos').textContent=circuitos.length;
-
   // Santiago: suma de indicadores A-E de todos excepto Viña del Mar
   const stgo=filteredRows.filter(r=>(r[C.circuito]||'').trim()!=='Viña del Mar');
   const totalStgo=stgo.reduce((acc,row)=>{
@@ -618,6 +694,7 @@ async function cargarDatos(){
     } else {
       renderDonuts(filteredRows);
       renderAsistencia(filteredRows);
+      renderSexo(filteredRows);
       renderTablas(filteredRows);
       renderComentarios(filteredRows);
       renderKPIs(filteredRows);
