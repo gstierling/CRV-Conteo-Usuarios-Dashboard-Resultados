@@ -269,39 +269,24 @@ function parseCSV(text){
   return rows.filter(r=>r.length>1||(r[0]&&r[0].trim()!==""));
 }
 
-/* Último domingo (o el domingo de la semana pasada si hoy no es domingo) */
-function ultimoDomingo(){
-  const hoy=new Date();
-  const dia=hoy.getDay(); // 0=domingo
-  const diff=dia===0?0:dia;
-  const dom=new Date(hoy);
-  dom.setDate(hoy.getDate()-diff);
-  return dom;
-}
-
 function parseFechaChile(str){
-  // DD/MM/YYYY o DD/MM/YYYY HH:MM:SS
   if(!str) return null;
   const parts=str.trim().split(/[\s\/]/);
   if(parts.length<3) return null;
   const d=parseInt(parts[0]),mo=parseInt(parts[1]),y=parseInt(parts[2]);
   return new Date(y,mo-1,d);
 }
-
 function mismaFecha(a,b){
   if(!a||!b) return false;
   return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
 }
-
 function formatFechaLarga(d){
   return d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
-
 function sumaRaw(row){
   return [C.h8,C.m8,C.h9,C.m9,C.h10,C.m10,C.h11,C.m11,C.h12,C.m12,C.h13,C.m13,C.h1350,C.m1350]
     .reduce((acc,col)=>acc+toNum(row[col]),0);
 }
-
 function calcIndicadores(row){
   const res={};
   TRAMOS.forEach(t=>{
@@ -312,26 +297,31 @@ function calcIndicadores(row){
   return res;
 }
 
-/* ===== FILTRADO: último domingo + deduplicar por circuito (mayor suma raw) ===== */
-function filtrarDatos(dataRows){
-  const dom=ultimoDomingo();
+/* Último domingo hacia atrás desde hoy (inclusive si hoy es domingo) */
+function ultimoDomingo(){
+  const hoy=new Date();
+  const dia=hoy.getDay(); // 0=domingo
+  const diff=dia===0?0:dia;
+  const dom=new Date(hoy);
+  dom.setDate(hoy.getDate()-diff);
+  dom.setHours(0,0,0,0);
+  return dom;
+}
 
-  // Filtrar por último domingo
+/* ===== FILTRADO: fecha más reciente en datos + deduplicar por circuito (mayor suma raw) ===== */
+function filtrarDatos(dataRows){
+  // Tomar la fecha más reciente disponible en los datos (independiente del día de semana)
+  const fechas=dataRows.map(r=>parseFechaChile(r[C.fechaConteo])).filter(Boolean);
+  if(fechas.length===0) return [];
+  const maxFecha=fechas.reduce((a,b)=>b>a?b:a);
+
+  // Mostrar esa fecha en el header
+  document.getElementById('fechaUltimoSabado').textContent=formatFechaLarga(maxFecha);
+
   let rows=dataRows.filter(r=>{
     const f=parseFechaChile(r[C.fechaConteo]);
-    return f&&mismaFecha(f,dom);
+    return f&&mismaFecha(f,maxFecha);
   });
-
-  // Si no hay datos del último domingo, tomar la fecha más reciente disponible
-  if(rows.length===0){
-    const fechas=dataRows.map(r=>parseFechaChile(r[C.fechaConteo])).filter(Boolean);
-    if(fechas.length===0) return [];
-    const maxFecha=fechas.reduce((a,b)=>b>a?b:a);
-    rows=dataRows.filter(r=>{
-      const f=parseFechaChile(r[C.fechaConteo]);
-      return f&&mismaFecha(f,maxFecha);
-    });
-  }
 
   // Deduplicar: por circuito, quedarse con el de mayor suma bruta
   const mejor={};
@@ -589,8 +579,8 @@ function renderKPIs(filteredRows){
 
 /* ===== FECHA ===== */
 function setFecha(){
-  const dom=ultimoDomingo();
-  document.getElementById('fechaUltimoSabado').textContent=formatFechaLarga(dom);
+  // La fecha se actualiza desde filtrarDatos() con la fecha más reciente de los datos
+  document.getElementById('fechaUltimoSabado').textContent='Cargando…';
 }
 
 /* ===== METODOLOGÍA ===== */
