@@ -271,10 +271,19 @@ function parseCSV(text){
 
 function parseFechaChile(str){
   if(!str) return null;
-  const parts=str.trim().split(/[\s\/]/);
-  if(parts.length<3) return null;
-  const d=parseInt(parts[0]),mo=parseInt(parts[1]),y=parseInt(parts[2]);
-  return new Date(y,mo-1,d);
+  str=str.trim();
+  // Formato Apps Script: "Sun Jun 21 2026 00:00:00 GMT-0400 (...)"
+  // También soporta DD/MM/YYYY por compatibilidad
+  if(str.indexOf('/')!==-1 && str.length<=10){
+    const parts=str.split('/');
+    if(parts.length<3) return null;
+    const d=parseInt(parts[0]),mo=parseInt(parts[1]),y=parseInt(parts[2]);
+    return new Date(y,mo-1,d);
+  }
+  // Formato largo de JS Date: parsear directamente
+  const d=new Date(str);
+  if(!isNaN(d.getTime())) return d;
+  return null;
 }
 function mismaFecha(a,b){
   if(!a||!b) return false;
@@ -601,11 +610,6 @@ async function cargarDatos(){
     const text=await res.text();
     const allRows=parseCSV(text);
     const dataRows=allRows.slice(1).filter(r=>(r[C.circuito]||'').trim()!=='');
-
-    // DEBUG TEMPORAL: mostrar primeras fechas crudas
-    const muestras=dataRows.slice(0,3).map(r=>`"${r[C.fechaConteo]}"`).join(' | ');
-    document.getElementById('fechaUltimoSabado').textContent='DEBUG fechas: '+muestras;
-    return; // detener aquí para ver el debug
 
     const filteredRows=filtrarDatos(dataRows);
 
