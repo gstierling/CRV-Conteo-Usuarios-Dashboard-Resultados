@@ -9,541 +9,372 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-  :root{
-    --bg:#0d1117; --bg-card:#161b22; --border:#21262d;
-    --orange:#f97316; --teal:#00d4aa; --text:#ffffff; --text-dim:#8b949e;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    background:var(--bg); color:var(--text);
-    font-family:'Nunito',sans-serif; min-height:100vh; font-size:17px;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
-    background-size:32px 32px;
-  }
-  .wrap{max-width:1240px;margin:0 auto;padding:30px 20px 70px;}
+:root{--bg:#0d1117;--bg-card:#161b22;--border:#21262d;--orange:#f97316;--teal:#00d4aa;--text:#fff;--text-dim:#8b949e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;font-size:17px;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:32px 32px;}
+.wrap{max-width:1240px;margin:0 auto;padding:30px 20px 70px;}
 
-  /* HEADER */
-  header{text-align:center;margin-bottom:10px;}
-  .live{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);
-    color:var(--teal);font-weight:800;font-size:13px;letter-spacing:0.06em;
-    text-transform:uppercase;padding:7px 16px;border-radius:999px;margin-bottom:16px;
-  }
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);animation:pulse 1.6s infinite;}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,212,170,0.6);}70%{box-shadow:0 0 0 8px rgba(0,212,170,0);}100%{box-shadow:0 0 0 0 rgba(0,212,170,0);}}
-  h1{font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:-0.01em;}
-  .date{color:var(--orange);font-weight:900;font-size:22px;margin-top:12px;}
+/* HEADER */
+header{text-align:center;margin-bottom:10px;}
+.live{display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);
+  color:var(--teal);font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+  padding:7px 16px;border-radius:999px;margin-bottom:16px;}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--teal);animation:pulse 1.6s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,212,170,.6);}70%{box-shadow:0 0 0 8px rgba(0,212,170,0);}100%{box-shadow:0 0 0 0 rgba(0,212,170,0);}}
+h1{font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:-.01em;}
+.date{color:var(--orange);font-weight:900;font-size:22px;margin-top:12px;}
 
-  /* KPIs */
-  .kpi-row{display:flex;justify-content:center;gap:36px;flex-wrap:wrap;margin:26px 0 6px;}
-  .kpi-card{
-    background:var(--bg-card);border:1px solid var(--border);
-    border-radius:16px;padding:22px 36px;text-align:center;min-width:180px;
-  }
-  .kpi-num{font-size:42px;font-weight:900;color:var(--orange);line-height:1;}
-  .kpi-lbl{font-size:13px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-dim);font-weight:800;margin-top:8px;}
-  .kpi-sub{font-size:18px;font-weight:700;color:var(--teal);margin-top:4px;}
+/* BLOQUES STGO / VIÑA */
+.totales-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:24px 0 20px;}
+.total-blk{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  padding:28px 44px;text-align:center;flex:1;min-width:220px;max-width:380px;}
+.total-blk .lbl{font-size:26px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:900;}
+.total-blk .num{font-size:72px;font-weight:900;color:var(--orange);margin-top:8px;line-height:1;}
+@media(max-width:768px){.total-blk .lbl{font-size:22px;}.total-blk .num{font-size:64px;}}
 
-  /* BLOQUES SANTIAGO / VIÑA */
-  .totales-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:24px 0 4px;}
-  .total-blk{
-    background:var(--bg-card);border:1px solid var(--border);
-    border-radius:14px;padding:28px 44px;text-align:center;flex:1;min-width:220px;max-width:380px;
-  }
-  .total-blk .lbl{font-size:26px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);font-weight:900;}
-  .total-blk .num{font-size:72px;font-weight:900;color:var(--orange);margin-top:8px;line-height:1;}
+/* DONUTS */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-top:8px;}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px;}
+.card-title{font-size:19px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.chart-box{position:relative;height:250px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;margin-top:16px;font-size:14px;font-weight:700;}
+.legend span{display:inline-flex;align-items:center;gap:7px;}
+.swatch{width:11px;height:11px;border-radius:3px;display:inline-block;}
+.vigias{text-align:center;margin-top:12px;font-size:12px;color:var(--text-dim);font-weight:700;font-style:italic;}
 
-  @media(max-width:768px){
-    .total-blk .lbl{font-size:22px;}
-    .total-blk .num{font-size:64px;}
-  }
+/* SECCIONES */
+.section-title{font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;
+  margin:36px 0 16px;border-left:4px solid var(--orange);padding-left:14px;}
+.chart-bar-box{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:4px;}
+.legend-static{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:16px;font-size:13px;font-weight:700;}
+.legend-static span{display:inline-flex;align-items:center;gap:6px;}
+.legend-static .sw{display:inline-block;width:13px;height:13px;border-radius:3px;}
 
-  /* DONUTS GRID */
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-top:28px;}
-  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px;}
-  .card-title{font-size:19px;font-weight:900;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
-  .chart-box{position:relative;height:250px;}
-  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;margin-top:16px;font-size:14px;font-weight:700;}
-  .legend span{display:inline-flex;align-items:center;gap:7px;}
-  .swatch{width:11px;height:11px;border-radius:3px;display:inline-block;}
-  .vigias{text-align:center;margin-top:12px;font-size:12px;color:var(--text-dim);font-weight:700;font-style:italic;}
+/* TABLAS */
+.table-section{margin-top:30px;}
+.table-title{font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--orange);margin-bottom:10px;}
+.table-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:500px;}
+th,td{padding:11px 14px;text-align:right;white-space:nowrap;}
+th{color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);font-weight:800;}
+th:first-child,td:first-child{text-align:left;}
+td{border-bottom:1px solid rgba(255,255,255,.04);font-weight:700;}
+tr:last-child td{border-bottom:none;}
+.col-total{color:var(--orange);font-weight:900;}
+tr.row-total td{border-top:2px solid var(--border);font-weight:900;background:rgba(255,255,255,.02);}
+tr.row-total td.col-total{color:var(--orange);}
+.circuito-tag{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:15px;}
+.dotc{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.comment-table td{white-space:normal;font-size:14px;}
+.comment-table td:first-child{font-weight:800;white-space:nowrap;width:160px;}
 
-  /* GRÁFICO ASISTENCIA */
-  .section-title{font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;margin:36px 0 16px;border-left:4px solid var(--orange);padding-left:14px;}
-  .chart-bar-box{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:4px;}
-  .chart-bar-inner{position:relative;height:280px;}
-
-  /* TABLAS */
-  .table-section{margin-top:30px;}
-  .table-title{font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;color:var(--orange);margin-bottom:10px;}
-  .table-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px;overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-size:15px;min-width:640px;}
-  th,td{padding:11px 14px;text-align:right;white-space:nowrap;}
-  th{color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);font-weight:800;}
-  th:first-child,td:first-child{text-align:left;}
-  td{border-bottom:1px solid rgba(255,255,255,0.04);font-weight:700;}
-  tr:last-child td{border-bottom:none;}
-  .col-total{color:var(--orange);font-weight:900;}
-  tr.row-total td{border-top:2px solid var(--border);font-weight:900;background:rgba(255,255,255,0.02);}
-  tr.row-total td.col-total{color:var(--orange);}
-  .circuito-tag{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:15px;}
-  .dotc{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
-
-  /* TABLA COMENTARIOS */
-  .comment-table table{min-width:400px;}
-  .comment-table td{white-space:normal;font-size:14px;}
-  .comment-table td:first-child{font-weight:800;white-space:nowrap;width:160px;}
-
-  /* METODOLOGÍA */
-  .formula-band{
-    margin:36px 0 8px;background:var(--bg-card);border:1px solid var(--border);
-    border-radius:14px;padding:20px 22px;font-size:14px;color:var(--text-dim);line-height:1.7;
-  }
-  .formula-band b{color:var(--text);}
-  .formula-band code{background:rgba(249,115,22,0.08);color:var(--orange);padding:1px 7px;border-radius:6px;font-weight:700;}
-
-  .updated-note{text-align:center;color:var(--text-dim);font-size:13px;margin-top:20px;font-weight:700;}
-  footer{display:flex;justify-content:center;gap:14px;margin-top:30px;flex-wrap:wrap;}
-  .btn{
-    background:var(--bg-card);border:1px solid var(--border);color:var(--text);
-    font-family:inherit;font-weight:900;font-size:14px;text-decoration:none;
-    padding:12px 24px;border-radius:10px;transition:border-color .15s,transform .15s;
-  }
-  .btn:hover{border-color:var(--orange);transform:translateY(-1px);}
-  .btn.primary{background:var(--orange);border-color:var(--orange);color:#1a0d00;}
-  .empty-state{text-align:center;color:var(--text-dim);padding:50px 20px;font-weight:700;font-size:15px;}
+/* METODOLOGÍA */
+.formula-band{margin:36px 0 8px;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:14px;padding:20px 22px;font-size:14px;color:var(--text-dim);line-height:1.7;}
+.formula-band b{color:var(--text);}
+.formula-band code{background:rgba(249,115,22,.08);color:var(--orange);padding:1px 7px;border-radius:6px;font-weight:700;}
+.updated-note{text-align:center;color:var(--text-dim);font-size:13px;margin-top:20px;font-weight:700;}
+footer{display:flex;justify-content:center;gap:14px;margin-top:30px;}
+.btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);font-family:inherit;
+  font-weight:900;font-size:14px;text-decoration:none;padding:12px 24px;border-radius:10px;transition:border-color .15s,transform .15s;}
+.btn:hover{border-color:var(--orange);transform:translateY(-1px);}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#1a0d00;}
+.empty-state{text-align:center;color:var(--text-dim);padding:50px 20px;font-weight:700;font-size:15px;}
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <header>
     <div class="live"><span class="dot"></span> En vivo · actualiza cada 30 min</div>
     <h1>CRV · Cantidad de Usuarios</h1>
-    <div class="date" id="fechaUltimoSabado">—</div>
+    <div class="date" id="fechaJornada">Cargando…</div>
   </header>
 
   <div class="totales-row">
-    <div class="total-blk">
-      <div class="lbl">CRV Santiago</div>
-      <div class="num" id="totalStgo">—</div>
-    </div>
-    <div class="total-blk">
-      <div class="lbl">CRV Viña del Mar</div>
-      <div class="num" id="totalVina">—</div>
-    </div>
+    <div class="total-blk"><div class="lbl">CRV Santiago</div><div class="num" id="totalStgo">—</div></div>
+    <div class="total-blk"><div class="lbl">CRV Viña del Mar</div><div class="num" id="totalVina">—</div></div>
   </div>
 
-  <div class="grid" id="chartsGrid">
-    <div class="empty-state" style="grid-column:1/-1;">Cargando datos…</div>
-  </div>
+  <div class="grid" id="chartsGrid"><div class="empty-state" style="grid-column:1/-1;">Cargando datos…</div></div>
 
-  <!-- Gráfico asistencia comparada -->
   <div class="section-title">Asistencia percibida comparada con jornada anterior</div>
   <div class="chart-bar-box">
-    <div class="chart-bar-inner" style="height:340px;"><canvas id="chartAsistencia"></canvas></div>
+    <div class="legend-static">
+      <span><span class="sw" style="background:#fb7185"></span>Mucho menor (17%)</span>
+      <span><span class="sw" style="background:#f97316"></span>Menor (34%)</span>
+      <span><span class="sw" style="background:#facc15"></span>Parecida (50%)</span>
+      <span><span class="sw" style="background:#00d4aa"></span>Mayor (67%)</span>
+      <span><span class="sw" style="background:#34d399"></span>Mucho mayor (81%)</span>
+    </div>
+    <div style="position:relative;height:320px;margin-top:12px;"><canvas id="chartAsistencia"></canvas></div>
   </div>
 
-  <!-- Gráfico distribución por sexo -->
   <div class="section-title">Asistencia por sexo</div>
   <div class="chart-bar-box">
-    <div class="chart-bar-inner" style="height:320px;"><canvas id="chartSexo"></canvas></div>
+    <div style="position:relative;height:320px;"><canvas id="chartSexo"></canvas></div>
   </div>
 
-  <!-- Tablas -->
   <div class="table-section">
     <div class="table-title">Total</div>
-    <div class="table-card">
-      <table id="tablaTotalEl">
-        <thead><tr id="tablaTotalHead"></tr></thead>
-        <tbody id="tablaTotalBody"><tr><td colspan="7" class="empty-state">Cargando…</td></tr></tbody>
-      </table>
-    </div>
+    <div class="table-card"><table><thead><tr id="thTotal"></tr></thead><tbody id="tbTotal"></tbody></table></div>
   </div>
-
   <div class="table-section" style="margin-top:24px;">
     <div class="table-title">Hombres</div>
-    <div class="table-card">
-      <table>
-        <thead><tr id="tablaHHead"></tr></thead>
-        <tbody id="tablaHBody"><tr><td colspan="7" class="empty-state">Cargando…</td></tr></tbody>
-      </table>
-    </div>
+    <div class="table-card"><table><thead><tr id="thH"></tr></thead><tbody id="tbH"></tbody></table></div>
   </div>
-
   <div class="table-section" style="margin-top:24px;">
     <div class="table-title">Mujeres</div>
-    <div class="table-card">
-      <table>
-        <thead><tr id="tablaMHead"></tr></thead>
-        <tbody id="tablaMBody"><tr><td colspan="7" class="empty-state">Cargando…</td></tr></tbody>
-      </table>
-    </div>
+    <div class="table-card"><table><thead><tr id="thM"></tr></thead><tbody id="tbM"></tbody></table></div>
   </div>
 
-  <!-- Comentarios -->
   <div class="section-title">Aspectos relevantes</div>
   <div class="table-card comment-table">
-    <table><thead><tr><th>Circuito</th><th>Comentario</th></tr></thead>
-    <tbody id="comentariosU"></tbody></table>
+    <table><thead><tr><th>Circuito</th><th>Comentario</th></tr></thead><tbody id="tbAspecto"></tbody></table>
   </div>
-
   <div class="section-title" style="margin-top:24px;">Comentarios generales</div>
   <div class="table-card comment-table">
-    <table><thead><tr><th>Circuito</th><th>Comentario</th></tr></thead>
-    <tbody id="comentariosV"></tbody></table>
+    <table><thead><tr><th>Circuito</th><th>Comentario</th></tr></thead><tbody id="tbComentario"></tbody></table>
   </div>
 
-  <!-- Metodología al final -->
-  <div class="formula-band" id="formulaBand">Cargando metodología…</div>
-
+  <div class="formula-band" id="formulaBand"></div>
   <div class="updated-note" id="updatedNote"></div>
-
-  <footer>
-    <a class="btn primary" href="https://docs.google.com/spreadsheets/d/1txnN8wXrYpBtD9H23n7IUwSP8dfsyhe6zrd47d_3GH4/edit" target="_blank" rel="noopener">BBDD</a>
-  </footer>
-
+  <footer><a class="btn primary" href="https://docs.google.com/spreadsheets/d/1txnN8wXrYpBtD9H23n7IUwSP8dfsyhe6zrd47d_3GH4/edit" target="_blank">BBDD</a></footer>
 </div>
 
 <script>
 /* ===== CONFIG ===== */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNJNHpEbKyvytX-fWMGOyR-HrjBfv8uT0XTzxbAri1CtywUfVNvv6glMcprPoyNvJF/exec";
-const REFRESH_MS = 30 * 60 * 1000; // 30 minutos
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzNJNHpEbKyvytX-fWMGOyR-HrjBfv8uT0XTzxbAri1CtywUfVNvv6glMcprPoyNvJF/exec';
+const REFRESH_MS=30*60*1000;
 
-/* Columnas (0-based) */
-const C = {
-  timestamp:0, vigia:1, fechaConteo:2, circuito:3, esquina:4,
-  h8:5,  m8:6,
-  h9:7,  m9:8,
-  h10:9, m10:10,
-  h11:11,m11:12,
-  h12:13,m12:14,
-  h13:15,m13:16,
-  h1350:17,m1350:18,
-  asistencia:19, aspecto:20, comentario:21
-};
+/* ===== COLUMNAS ===== */
+const C={timestamp:0,vigia:1,fechaConteo:2,circuito:3,esquina:4,
+  h8:5,m8:6,h9:7,m9:8,h10:9,m10:10,h11:11,m11:12,
+  h12:13,m12:14,h13:15,m13:16,h1350:17,m1350:18,
+  asistencia:19,aspecto:20,comentario:21};
 
-const TRAMOS = [
-  { key:"A", label:"9:00–10:00",  hCol:"h9",   mCol:"m9",   h2Col:"h10",  m2Col:"m10"  },
-  { key:"B", label:"10:00–11:00", hCol:"h10",  mCol:"m10",  h2Col:"h11",  m2Col:"m11"  },
-  { key:"C", label:"11:00–12:00", hCol:"h11",  mCol:"m11",  h2Col:"h12",  m2Col:"m12"  },
-  { key:"D", label:"12:00–13:00", hCol:"h12",  mCol:"m12",  h2Col:"h13",  m2Col:"m13"  },
-  { key:"E", label:"13:00–14:00", hCol:"h13",  mCol:"m13",  h2Col:"h1350",m2Col:"m1350"},
+/* ===== TRAMOS BASE (todos los circuitos excepto Viña del Mar usan los 5) ===== */
+const TRAMOS_STD=[
+  {key:'A',label:'9:00–10:00', hCol1:'h9', mCol1:'m9', hCol2:'h10',mCol2:'m10'},
+  {key:'B',label:'10:00–11:00',hCol1:'h10',mCol1:'m10',hCol2:'h11',mCol2:'m11'},
+  {key:'C',label:'11:00–12:00',hCol1:'h11',mCol1:'m11',hCol2:'h12',mCol2:'m12'},
+  {key:'D',label:'12:00–13:00',hCol1:'h12',mCol1:'m12',hCol2:'h13',mCol2:'m13'},
+  {key:'E',label:'13:00–14:00',hCol1:'h13',mCol1:'m13',hCol2:'h1350',mCol2:'m1350'},
 ];
-const PERIOD_COLORS = {A:"#f97316",B:"#00d4aa",C:"#60a5fa",D:"#e879f9",E:"#facc15"};
-const CIRCUIT_COLORS = ["#f97316","#00d4aa","#60a5fa","#e879f9","#facc15","#fb7185","#34d399","#a78bfa"];
+/* Viña del Mar: solo hasta 12:00–13:00 (CRV termina a las 13:00) */
+const TRAMOS_VINA=[
+  {key:'A',label:'9:00–10:00', hCol1:'h9', mCol1:'m9', hCol2:'h10',mCol2:'m10'},
+  {key:'B',label:'10:00–11:00',hCol1:'h10',mCol1:'m10',hCol2:'h11',mCol2:'m11'},
+  {key:'C',label:'11:00–12:00',hCol1:'h11',mCol1:'m11',hCol2:'h12',mCol2:'m12'},
+  {key:'D',label:'12:00–13:00',hCol1:'h12',mCol1:'m12',hCol2:'h13',mCol2:'m13'},
+];
 
-let charts = {};
-let chartAsistencia=null;
-let chartSexo=null;
+const PERIOD_COLORS={A:'#f97316',B:'#00d4aa',C:'#60a5fa',D:'#e879f9',E:'#facc15'};
+const CIRCUIT_COLORS=['#f97316','#00d4aa','#60a5fa','#e879f9','#facc15','#fb7185','#34d399','#a78bfa'];
+function colorFor(i){return CIRCUIT_COLORS[i%CIRCUIT_COLORS.length];}
 
-/* ===== UTILIDADES ===== */
-function colorFor(i){ return CIRCUIT_COLORS[i % CIRCUIT_COLORS.length]; }
-
-function toNum(v){
-  if(v===undefined||v===null) return 0;
-  const n=parseFloat(String(v).replace(",",".").trim());
-  return isNaN(n)?0:n;
+/* ===== UTILS ===== */
+function toNum(v){const n=parseFloat(String(v==null?'':v).replace(',','.').trim());return isNaN(n)?0:n;}
+function tramosDeCircuito(row){
+  return (row[C.circuito]||'').trim()==='Viña del Mar'?TRAMOS_VINA:TRAMOS_STD;
 }
-
-function parseCSV(text){
-  const rows=[]; let row=[]; let field=""; let inQuotes=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i],next=text[i+1];
-    if(inQuotes){
-      if(c==='"'&&next==='"'){field+='"';i++;}
-      else if(c==='"'){inQuotes=false;}
-      else{field+=c;}
-    } else {
-      if(c==='"'){inQuotes=true;}
-      else if(c===','){row.push(field);field="";}
-      else if(c==='\n'){row.push(field);rows.push(row);row=[];field="";}
-      else if(c==='\r'){}
-      else{field+=c;}
-    }
-  }
-  if(field.length>0||row.length>0){row.push(field);rows.push(row);}
-  return rows.filter(r=>r.length>1||(r[0]&&r[0].trim()!==""));
-}
-
-function parseFechaChile(str){
-  if(!str) return null;
-  str=str.trim();
-  // Formato Apps Script: "Sun Jun 21 2026 00:00:00 GMT-0400 (...)"
-  // También soporta DD/MM/YYYY por compatibilidad
-  if(str.indexOf('/')!==-1 && str.length<=10){
-    const parts=str.split('/');
-    if(parts.length<3) return null;
-    const d=parseInt(parts[0]),mo=parseInt(parts[1]),y=parseInt(parts[2]);
-    return new Date(y,mo-1,d);
-  }
-  // Formato largo de JS Date: parsear directamente
-  const d=new Date(str);
-  if(!isNaN(d.getTime())) return d;
-  return null;
-}
-function mismaFecha(a,b){
-  if(!a||!b) return false;
-  return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
-}
-function formatFechaLarga(d){
-  const str=d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  return str.charAt(0).toUpperCase()+str.slice(1);
-}
-function sumaRaw(row){
-  return [C.h8,C.m8,C.h9,C.m9,C.h10,C.m10,C.h11,C.m11,C.h12,C.m12,C.h13,C.m13,C.h1350,C.m1350]
-    .reduce((acc,col)=>acc+toNum(row[col]),0);
+function calcTramo(row,t,soloH,soloM){
+  const h1=toNum(row[C[t.hCol1]]),m1=toNum(row[C[t.mCol1]]);
+  const h2=toNum(row[C[t.hCol2]]),m2=toNum(row[C[t.mCol2]]);
+  if(soloH) return Math.round(((h1+h2)/2)*6);
+  if(soloM) return Math.round(((m1+m2)/2)*6);
+  return Math.round((((h1+m1)+(h2+m2))/2)*6);
 }
 function calcIndicadores(row){
   const res={};
-  TRAMOS.forEach(t=>{
-    const s1=toNum(row[C[t.hCol]])+toNum(row[C[t.mCol]]);
-    const s2=toNum(row[C[t.h2Col]])+toNum(row[C[t.m2Col]]);
-    res[t.key]=Math.round(((s1+s2)/2)*6);
-  });
+  tramosDeCircuito(row).forEach(t=>{res[t.key]=calcTramo(row,t,false,false);});
   return res;
 }
+function totalRow(row){return Object.values(calcIndicadores(row)).reduce((a,b)=>a+b,0);}
 
-/* Último domingo hacia atrás desde hoy (inclusive si hoy es domingo) */
-function ultimoDomingo(){
-  const hoy=new Date();
-  const dia=hoy.getDay(); // 0=domingo
-  const diff=dia===0?0:dia;
-  const dom=new Date(hoy);
-  dom.setDate(hoy.getDate()-diff);
-  dom.setHours(0,0,0,0);
-  return dom;
+/* ===== CSV PARSER ===== */
+function parseCSV(text){
+  const rows=[];let row=[];let field='';let inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i],nx=text[i+1];
+    if(inQ){if(c==='"'&&nx==='"'){field+='"';i++;}else if(c==='"'){inQ=false;}else{field+=c;}}
+    else{if(c==='"'){inQ=true;}else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c!=='\r'){field+=c;}}
+  }
+  if(field||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.length>1||(r[0]&&r[0].trim()!==''));
 }
 
-/* ===== FILTRADO: fecha más reciente en datos + deduplicar por circuito (mayor suma raw) ===== */
+/* ===== FECHAS ===== */
+function parseFecha(str){
+  if(!str) return null;
+  str=str.trim();
+  if(str.indexOf('/')!==-1&&str.length<=10){
+    const p=str.split('/');
+    return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+  }
+  const d=new Date(str);return isNaN(d)?null:d;
+}
+function mismaFecha(a,b){
+  return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+}
+function fmtFecha(d){
+  const s=d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function sumaRaw(row){
+  return [C.h8,C.m8,C.h9,C.m9,C.h10,C.m10,C.h11,C.m11,C.h12,C.m12,C.h13,C.m13,C.h1350,C.m1350]
+    .reduce((a,col)=>a+toNum(row[col]),0);
+}
+
+/* ===== FILTRADO: fecha más reciente + deduplicar por circuito ===== */
 function filtrarDatos(dataRows){
-  // Tomar la fecha más reciente disponible en los datos (independiente del día de semana)
-  const fechas=dataRows.map(r=>parseFechaChile(r[C.fechaConteo])).filter(Boolean);
-  if(fechas.length===0) return [];
-  const maxFecha=fechas.reduce((a,b)=>b>a?b:a);
-
-  // Mostrar esa fecha en el header
-  document.getElementById('fechaUltimoSabado').textContent=formatFechaLarga(maxFecha);
-
-  let rows=dataRows.filter(r=>{
-    const f=parseFechaChile(r[C.fechaConteo]);
-    return f&&mismaFecha(f,maxFecha);
-  });
-
-  // Deduplicar: por circuito, quedarse con el de mayor suma bruta
+  const fechas=dataRows.map(r=>parseFecha(r[C.fechaConteo])).filter(Boolean);
+  if(!fechas.length) return[];
+  const maxF=fechas.reduce((a,b)=>b>a?b:a);
+  document.getElementById('fechaJornada').textContent=fmtFecha(maxF);
+  const deEseFecha=dataRows.filter(r=>mismaFecha(parseFecha(r[C.fechaConteo]),maxF));
   const mejor={};
-  rows.forEach(r=>{
-    const circ=(r[C.circuito]||"").trim();
-    if(!circ) return;
+  deEseFecha.forEach(r=>{
+    const c=(r[C.circuito]||'').trim();if(!c)return;
     const s=sumaRaw(r);
-    if(!mejor[circ]||s>mejor[circ].suma){
-      mejor[circ]={row:r,suma:s};
-    }
+    if(!mejor[c]||s>mejor[c].s) mejor[c]={row:r,s};
   });
   return Object.values(mejor).map(v=>v.row);
 }
 
-/* ===== RENDER DONUTS ===== */
-const centerTotalPlugin={
-  id:'centerTotal',
+/* ===== ORDEN: alfabético, Viña al final ===== */
+function ordenar(rows){
+  return[...rows].sort((a,b)=>{
+    const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
+    if(ca==='Viña del Mar')return 1;if(cb==='Viña del Mar')return -1;
+    return ca.localeCompare(cb,'es');
+  });
+}
+
+/* ===== PLUGIN: número central donut ===== */
+let charts={};
+const centerPlugin={
+  id:'centerPlugin',
   afterDraw(chart){
-    const val=chart.config._centerVal;
-    if(val===undefined) return;
-    const{ctx,chartArea}=chart;
-    const cx=(chartArea.left+chartArea.right)/2;
-    const cy=(chartArea.top+chartArea.bottom)/2;
-    // Radio interior de la dona = radio total × (1 - cutout%) 
-    // cutout es '62%' → radio interior = radio * 0.62
-    const radioTotal=(chartArea.right-chartArea.left)/2;
-    const radioInterior=radioTotal*0.62;
-    // Fuente máxima que cabe con ~15% de margen interior
-    const fontSize=Math.floor(radioInterior*0.48);
+    const val=chart._centerVal;if(val==null)return;
+    const{ctx,chartArea:ca}=chart;
+    const cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;
+    const ri=(ca.right-ca.left)/2*0.62; // radio interior (cutout=62%)
+    const fs=Math.floor(ri*0.48);
     ctx.save();
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.font=`900 ${fontSize}px Nunito, sans-serif`;
-    ctx.fillStyle='#ffffff';
-    ctx.fillText(val.toLocaleString('es-CL'),cx,cy-Math.round(fontSize*0.18));
-    ctx.font=`700 ${Math.max(10,Math.round(fontSize*0.32))}px Nunito, sans-serif`;
-    ctx.fillStyle='#8b949e';
-    ctx.fillText('TOTAL',cx,cy+Math.round(fontSize*0.58));
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=`900 ${fs}px Nunito,sans-serif`;ctx.fillStyle='#fff';
+    ctx.fillText(val.toLocaleString('es-CL'),cx,cy-Math.round(fs*0.18));
+    ctx.font=`700 ${Math.max(10,Math.round(fs*0.32))}px Nunito,sans-serif`;ctx.fillStyle='#8b949e';
+    ctx.fillText('TOTAL',cx,cy+Math.round(fs*0.58));
     ctx.restore();
   }
 };
 
-function renderDonuts(filteredRows){
-  const grid=document.getElementById('chartsGrid');
-  grid.innerHTML='';
-
-  // Ordenar: alfabético, Viña del Mar al final
-  const ordenados=[...filteredRows].sort((a,b)=>{
-    const ca=(a[C.circuito]||'').trim(), cb=(b[C.circuito]||'').trim();
-    if(ca==='Viña del Mar') return 1;
-    if(cb==='Viña del Mar') return -1;
-    return ca.localeCompare(cb,'es');
-  });
-
-  ordenados.forEach((row,i)=>{
-    const circuito=(row[C.circuito]||'').trim();
+/* ===== DONUTS ===== */
+function renderDonuts(rows){
+  const grid=document.getElementById('chartsGrid');grid.innerHTML='';
+  ordenar(rows).forEach((row,i)=>{
+    const circ=(row[C.circuito]||'').trim();
     const vigia=(row[C.vigia]||'').trim();
-    const ind=calcIndicadores(row);
-    const data=TRAMOS.map(t=>ind[t.key]);
-    const total=data.reduce((a,b)=>a+b,0);
-    const safeId=`donut_${i}`;
-
-    const card=document.createElement('div');
-    card.className='card';
+    const tramos=tramosDeCircuito(row);
+    const vals=tramos.map(t=>calcTramo(row,t,false,false));
+    const total=vals.reduce((a,b)=>a+b,0);
+    const sid=`dn_${i}`;
+    const card=document.createElement('div');card.className='card';
     card.innerHTML=`
-      <div class="card-title">
-        <span class="dotc" style="background:${colorFor(i)}"></span>${circuito}
-      </div>
-      <div class="chart-box"><canvas id="${safeId}"></canvas></div>
-      <div class="legend" id="leg_${safeId}"></div>
-      ${vigia?`<div class="vigias">Vigía: ${vigia}</div>`:''}
-    `;
+      <div class="card-title"><span class="dotc" style="background:${colorFor(i)}"></span>${circ}</div>
+      <div class="chart-box"><canvas id="${sid}"></canvas></div>
+      <div class="legend" id="leg_${sid}"></div>
+      ${vigia?`<div class="vigias">Vigía: ${vigia}</div>`:''}`;
     grid.appendChild(card);
-
     requestAnimationFrame(()=>{
-      const ctx=document.getElementById(safeId);
-      if(!ctx) return;
-      if(charts[safeId]) charts[safeId].destroy();
-      charts[safeId]=new Chart(ctx,{
+      const ctx=document.getElementById(sid);if(!ctx)return;
+      if(charts[sid])charts[sid].destroy();
+      charts[sid]=new Chart(ctx,{
         type:'doughnut',
         data:{
-          labels:TRAMOS.map(t=>t.label),
-          datasets:[{data,backgroundColor:TRAMOS.map(t=>PERIOD_COLORS[t.key]),borderColor:'#161b22',borderWidth:2}]
+          labels:tramos.map(t=>t.label),
+          datasets:[{data:vals,backgroundColor:tramos.map(t=>PERIOD_COLORS[t.key]),borderColor:'#161b22',borderWidth:2}]
         },
         options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{
-            legend:{display:false},
-            tooltip:{callbacks:{label:(item)=>{
-              const val=item.raw;
-              const pct=total>0?((val/total)*100).toFixed(1):0;
-              return ` ${item.label}: ${val.toLocaleString('es-CL')} (${pct}%)`;
-            }}}
-          },
-          cutout:'62%'
+          responsive:true,maintainAspectRatio:false,cutout:'62%',
+          /* 1) Sin tooltip */
+          plugins:{legend:{display:false},tooltip:{enabled:false}}
         },
-        plugins:[centerTotalPlugin]
+        plugins:[centerPlugin]
       });
-      charts[safeId].config._centerVal=total;
-      charts[safeId].update();
-
-      document.getElementById(`leg_${safeId}`).innerHTML=TRAMOS.map(t=>`
-        <span>
-          <span class="swatch" style="background:${PERIOD_COLORS[t.key]}"></span>
-          ${t.label}: <span style="color:var(--text-dim);font-weight:600;">${ind[t.key].toLocaleString('es-CL')}</span>
-        </span>
+      charts[sid]._centerVal=total;
+      charts[sid].update();
+      document.getElementById(`leg_${sid}`).innerHTML=tramos.map(t=>`
+        <span><span class="swatch" style="background:${PERIOD_COLORS[t.key]}"></span>
+        ${t.label}: <span style="color:var(--text-dim);font-weight:600;">${calcTramo(row,t,false,false).toLocaleString('es-CL')}</span></span>
       `).join('');
     });
   });
 }
 
-/* ===== GRÁFICO ASISTENCIA ===== */
-function renderAsistencia(filteredRows){
-  // Orden fijo de respuestas (de menor a mayor)
-  const OPCIONES=['Mucho menor','Menor','Parecida','Mayor','Mucho mayor'];
-  const COLORES_OP=['#fb7185','#f97316','#facc15','#00d4aa','#34d399'];
+/* ===== GRÁFICO ASISTENCIA PERCIBIDA ===== */
+/* Longitud de barra según escala fija, sin etiquetas dentro */
+let chartAsistencia=null;
+const ASIST_ESCALA={
+  'Mucho menor':{pct:17,color:'#fb7185'},
+  'Menor':{pct:34,color:'#f97316'},
+  'Parecida':{pct:50,color:'#facc15'},
+  'Mayor':{pct:67,color:'#00d4aa'},
+  'Mucho mayor':{pct:81,color:'#34d399'},
+};
+function renderAsistencia(rows){
+  const ord=ordenar(rows);
+  const labels=ord.map(r=>(r[C.circuito]||'').trim());
+  const vals=ord.map(r=>{const e=ASIST_ESCALA[(r[C.asistencia]||'').trim()];return e?e.pct:50;});
+  const colors=ord.map(r=>{const e=ASIST_ESCALA[(r[C.asistencia]||'').trim()];return e?e.color:'#facc15';});
+  const tooltipLabels=ord.map(r=>(r[C.asistencia]||'Sin respuesta').trim());
 
-  // Circuitos en orden alfabético, Viña al final
-  const ordenados=[...filteredRows].sort((a,b)=>{
-    const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
-    if(ca==='Viña del Mar') return 1;
-    if(cb==='Viña del Mar') return -1;
-    return ca.localeCompare(cb,'es');
-  });
-
-  const labels=ordenados.map(r=>(r[C.circuito]||'').trim());
-
-  // Para cada opción: 1 si ese circuito la respondió, 0 si no
-  const datasets=OPCIONES.map((op,oi)=>({
-    label:op,
-    data:ordenados.map(r=>(r[C.asistencia]||'').trim()===op?1:0),
-    backgroundColor:COLORES_OP[oi],
-    borderRadius:0,
-    borderWidth:0,
-    stack:'s'
-  }));
-
-  const ctx=document.getElementById('chartAsistencia');
-  if(!ctx) return;
-  if(chartAsistencia) chartAsistencia.destroy();
+  const ctx=document.getElementById('chartAsistencia');if(!ctx)return;
+  if(chartAsistencia)chartAsistencia.destroy();
   chartAsistencia=new Chart(ctx,{
     type:'bar',
-    data:{labels,datasets},
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:6,borderWidth:0}]},
     options:{
-      indexAxis:'y',
-      responsive:true,maintainAspectRatio:false,
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
       plugins:{
-        legend:{
-          display:true,
-          reverse:true,
-          labels:{color:'#ffffff',font:{size:13,weight:'700',family:'Nunito'},boxWidth:14,padding:16}
-        },
-        tooltip:{callbacks:{
-          label:(i)=>` ${i.dataset.label}: ${i.raw===1?'Sí':'No'}`
-        }},
-        // Mostrar etiqueta dentro de cada segmento
-        datalabels:{display:false}
+        legend:{display:false},
+        tooltip:{callbacks:{label:(i)=>` ${tooltipLabels[i.dataIndex]}`}}
       },
       scales:{
-        x:{
-          stacked:true,display:false,
-          grid:{display:false}
-        },
-        y:{
-          stacked:true,
-          ticks:{color:'#ffffff',font:{size:14,weight:'700',family:'Nunito'}},
-          grid:{color:'rgba(255,255,255,0.04)'}
-        }
+        x:{min:0,max:100,ticks:{color:'#8b949e',font:{size:12,family:'Nunito'},callback:v=>v+'%'},
+          grid:{color:'rgba(255,255,255,.06)'}},
+        y:{ticks:{color:'#fff',font:{size:14,weight:'700',family:'Nunito'}},
+          grid:{color:'rgba(255,255,255,.04)'}}
       }
-    },
-    // Plugin inline para mostrar el texto de la respuesta dentro de la barra
-    plugins:[{
-      id:'asistenciaLabel',
-      afterDatasetsDraw(chart){
-        const{ctx,data}=chart;
-        data.datasets.forEach((ds,di)=>{
-          const meta=chart.getDatasetMeta(di);
-          if(meta.hidden) return;
-          meta.data.forEach((bar,i)=>{
-            if(ds.data[i]!==1) return;
-            const{x,y,width,height}=bar.getProps(['x','y','width','height'],true);
-            if(width<30) return;
-            ctx.save();
-            ctx.textAlign='center';
-            ctx.textBaseline='middle';
-            ctx.fillStyle='rgba(0,0,0,0.75)';
-            ctx.font=`800 ${Math.min(13,Math.max(10,Math.round(height*0.45)))}px Nunito,sans-serif`;
-            ctx.fillText(ds.label, x-width/2+width/2, y+height/2);
-            ctx.restore();
-          });
-        });
-      }
-    }]
+    }
+    /* Sin plugin de etiquetas dentro de barras */
   });
 }
 
 /* ===== GRÁFICO SEXO ===== */
-function renderSexo(filteredRows){
-  const ordenados=[...filteredRows].sort((a,b)=>{
-    const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
-    if(ca==='Viña del Mar') return 1;
-    if(cb==='Viña del Mar') return -1;
-    return ca.localeCompare(cb,'es');
+let chartSexo=null;
+function renderSexo(rows){
+  const ord=ordenar(rows);
+  /* Columnas brutas H y M — Viña del Mar excluye h13,m13,h1350,m1350 */
+  const colsH_std=[C.h8,C.h9,C.h10,C.h11,C.h12,C.h13,C.h1350];
+  const colsM_std=[C.m8,C.m9,C.m10,C.m11,C.m12,C.m13,C.m1350];
+  const colsH_vina=[C.h8,C.h9,C.h10,C.h11,C.h12];
+  const colsM_vina=[C.m8,C.m9,C.m10,C.m11,C.m12];
+
+  const labels=ord.map(r=>(r[C.circuito]||'').trim());
+  const datH=ord.map(r=>{
+    const esV=(r[C.circuito]||'').trim()==='Viña del Mar';
+    return(esV?colsH_vina:colsH_std).reduce((a,col)=>a+toNum(r[col]),0);
   });
-
-  const colsH=[C.h8,C.h9,C.h10,C.h11,C.h12,C.h13,C.h1350];
-  const colsM=[C.m8,C.m9,C.m10,C.m11,C.m12,C.m13,C.m1350];
-
-  const labels=ordenados.map(r=>(r[C.circuito]||'').trim());
-  const datH=ordenados.map(r=>colsH.reduce((acc,col)=>acc+toNum(r[col]),0));
-  const datM=ordenados.map(r=>colsM.reduce((acc,col)=>acc+toNum(r[col]),0));
-
+  const datM=ord.map(r=>{
+    const esV=(r[C.circuito]||'').trim()==='Viña del Mar';
+    return(esV?colsM_vina:colsM_std).reduce((a,col)=>a+toNum(r[col]),0);
+  });
   labels.push('Total');
   datH.push(datH.reduce((a,b)=>a+b,0));
   datM.push(datM.reduce((a,b)=>a+b,0));
@@ -551,239 +382,172 @@ function renderSexo(filteredRows){
   const pctH=datH.map((h,i)=>{const t=h+datM[i];return t>0?Math.round(h/t*1000)/10:0;});
   const pctM=datM.map((m,i)=>{const t=datH[i]+m;return t>0?Math.round(m/t*1000)/10:0;});
 
-  const ctx=document.getElementById('chartSexo');
-  if(!ctx) return;
-  if(chartSexo) chartSexo.destroy();
-
-  // Plugin inline para dibujar el % dentro de cada segmento
-  const pctLabelPlugin={
-    id:'pctLabel',
+  /* Plugin: % centrado dentro de cada segmento */
+  const pctPlugin={
+    id:'pctPlugin',
     afterDatasetsDraw(chart){
-      const{ctx:c,data}=chart;
-      data.datasets.forEach((ds,di)=>{
+      const{ctx:c}=chart;
+      chart.data.datasets.forEach((ds,di)=>{
         const meta=chart.getDatasetMeta(di);
-        if(meta.hidden) return;
-        const pctArr=di===0?pctH:pctM;
+        const arr=di===0?pctH:pctM;
         meta.data.forEach((bar,i)=>{
-          const pct=pctArr[i];
-          if(pct<5) return; // no mostrar si segmento muy chico
-          const{x,y,width,height}=bar.getProps(['x','y','width','height'],true);
-          if(width<28) return;
+          const pct=arr[i];if(pct<6)return;
+          /* Obtener bounds reales del segmento */
+          const props=bar.getProps(['x','y','base','width','height'],true);
+          /* indexAxis:'y' → la barra crece horizontalmente
+             x = borde derecho del segmento, base = borde izquierdo
+             centro horizontal = (x + base) / 2
+             centro vertical = y + height/2                          */
+          const cx=(props.x+props.base)/2;
+          const cy=props.y+props.height/2;
+          const fs=Math.min(14,Math.max(10,Math.round(Math.abs(props.height)*0.45)));
           c.save();
-          c.textAlign='center';
-          c.textBaseline='middle';
-          c.fillStyle='rgba(0,0,0,0.8)';
-          const fs=Math.min(14,Math.max(10,Math.round(height*0.48)));
+          c.textAlign='center';c.textBaseline='middle';
+          c.fillStyle='rgba(0,0,0,.82)';
           c.font=`900 ${fs}px Nunito,sans-serif`;
-          c.fillText(`${pct}%`, x-width/2+width/2, y+height/2);
+          c.fillText(`${pct}%`,cx,cy);
           c.restore();
         });
       });
     }
   };
 
+  const ctx=document.getElementById('chartSexo');if(!ctx)return;
+  if(chartSexo)chartSexo.destroy();
   chartSexo=new Chart(ctx,{
     type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Hombres',data:pctH,backgroundColor:'#60a5fa',borderRadius:0,borderWidth:0,stack:'s'},
-        {label:'Mujeres', data:pctM,backgroundColor:'#e879f9',borderRadius:0,borderWidth:0,stack:'s'},
-      ]
-    },
+    data:{labels,datasets:[
+      {label:'Hombres',data:pctH,backgroundColor:'#60a5fa',borderWidth:0,stack:'s'},
+      {label:'Mujeres', data:pctM,backgroundColor:'#e879f9',borderWidth:0,stack:'s'},
+    ]},
     options:{
-      indexAxis:'y',
-      responsive:true,maintainAspectRatio:false,
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
       plugins:{
-        legend:{
-          display:true,
-          labels:{color:'#ffffff',font:{size:14,weight:'700',family:'Nunito'},boxWidth:14}
-        },
-        tooltip:{callbacks:{
-          label:(i)=>{
-            const idx=i.dataIndex;
-            const isH=i.datasetIndex===0;
-            const abs=isH?datH[idx]:datM[idx];
-            return ` ${i.dataset.label}: ${i.raw}% (${abs.toLocaleString('es-CL')} conteos)`;
-          }
-        }}
+        legend:{display:true,labels:{color:'#fff',font:{size:14,weight:'700',family:'Nunito'},boxWidth:14}},
+        tooltip:{callbacks:{label:(i)=>{
+          const idx=i.dataIndex,isH=i.datasetIndex===0;
+          return ` ${i.dataset.label}: ${i.raw}% (${(isH?datH:datM)[idx].toLocaleString('es-CL')} conteos)`;
+        }}}
       },
       scales:{
-        x:{stacked:true,max:100,ticks:{color:'#8b949e',font:{size:13,family:'Nunito'},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.07)'}},
-        y:{stacked:true,ticks:{color:'#ffffff',font:{size:14,weight:'700',family:'Nunito'}},grid:{color:'rgba(255,255,255,0.04)'}}
+        x:{stacked:true,max:100,ticks:{color:'#8b949e',font:{size:12,family:'Nunito'},callback:v=>v+'%'},
+          grid:{color:'rgba(255,255,255,.07)'}},
+        y:{stacked:true,ticks:{color:'#fff',font:{size:14,weight:'700',family:'Nunito'}},
+          grid:{color:'rgba(255,255,255,.04)'}}
       }
     },
-    plugins:[pctLabelPlugin]
+    plugins:[pctPlugin]
   });
 }
 
-/* ===== TABLAS NUMÉRICAS ===== */
-function renderTablaGenerica(headId, bodyId, filteredRows, colPairs){
-  const circuitos=[...filteredRows].sort((a,b)=>{
-    const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
-    if(ca==='Viña del Mar') return 1;
-    if(cb==='Viña del Mar') return -1;
-    return ca.localeCompare(cb,'es');
-  });
+/* ===== TABLAS ===== */
+function renderTablas(rows){
+  const ord=ordenar(rows);
+  /* Columnas de tabla: usar los tramos propios de cada circuito.
+     Como distintos circuitos tienen distintos tramos, usamos la unión de etiquetas
+     de TRAMOS_STD (5 columnas) y para Viña del Mar mostramos — en la col E. */
+  const colLabels=TRAMOS_STD.map(t=>t.label);
 
-  const headEl=document.getElementById(headId);
-  headEl.innerHTML='<th>Circuito</th>'+colPairs.map(p=>`<th>${p.label}</th>`).join('')+'<th>Total</th>';
-
-  const rows=circuitos.map((row,i)=>{
-    const circ=(row[C.circuito]||'').trim();
-    const vals=colPairs.map(p=>p.fn(row));
-    const rowTotal=vals.reduce((a,b)=>a+b,0);
-    return{circ,vals,rowTotal,i};
-  });
-
-  const colTotals=colPairs.map((_,ci)=>rows.reduce((acc,r)=>acc+r.vals[ci],0));
-  const grandTotal=colTotals.reduce((a,b)=>a+b,0);
-
-  const bodyEl=document.getElementById(bodyId);
-  bodyEl.innerHTML=rows.map(r=>`
-    <tr>
-      <td><span class="circuito-tag"><span class="dotc" style="background:${colorFor(r.i)}"></span>${r.circ}</span></td>
-      ${r.vals.map(v=>`<td>${v.toLocaleString('es-CL')}</td>`).join('')}
-      <td class="col-total">${r.rowTotal.toLocaleString('es-CL')}</td>
-    </tr>
-  `).join('')+`
-    <tr class="row-total">
-      <td>Total</td>
-      ${colTotals.map(v=>`<td>${v.toLocaleString('es-CL')}</td>`).join('')}
-      <td class="col-total">${grandTotal.toLocaleString('es-CL')}</td>
-    </tr>`;
-}
-
-function renderTablas(filteredRows){
-  // Usar exactamente la misma lógica que los donuts:
-  // cada tramo = promedio(ventana1_H+ventana1_M, ventana2_H+ventana2_M) × 6
-  // Esto garantiza que tabla y donut muestren los mismos valores.
-  // El tramo "13:50-14:00" NO aparece como columna separada: ya está dentro del tramo E.
-
-  const tramosTabla=[
-    {label:'9:00–10:00',  hCol1:C.h9,  mCol1:C.m9,  hCol2:C.h10, mCol2:C.m10 },
-    {label:'10:00–11:00', hCol1:C.h10, mCol1:C.m10, hCol2:C.h11, mCol2:C.m11 },
-    {label:'11:00–12:00', hCol1:C.h11, mCol1:C.m11, hCol2:C.h12, mCol2:C.m12 },
-    {label:'12:00–13:00', hCol1:C.h12, mCol1:C.m12, hCol2:C.h13, mCol2:C.m13 },
-    {label:'13:00–14:00', hCol1:C.h13, mCol1:C.m13, hCol2:C.h1350,mCol2:C.m1350},
-  ];
-
-  // Para Viña del Mar el tramo E (13:00-14:00) no aplica (sin datos de 13:50).
-  // En ese caso el valor calculado será bajo/cero por falta de datos, lo que es correcto.
-
-  function calcTramoRow(row, t, soloH, soloM){
-    const h1=toNum(row[t.hCol1]), m1=toNum(row[t.mCol1]);
-    const h2=toNum(row[t.hCol2]), m2=toNum(row[t.mCol2]);
-    if(soloH)  return Math.round(((h1+h2)/2)*6);
-    if(soloM)  return Math.round(((m1+m2)/2)*6);
-    return Math.round((((h1+m1)+(h2+m2))/2)*6);
+  function calcCeldas(row,soloH,soloM){
+    const esVina=(row[C.circuito]||'').trim()==='Viña del Mar';
+    return TRAMOS_STD.map(t=>{
+      if(esVina&&t.key==='E') return '—';
+      return calcTramo(row,t,soloH,soloM).toLocaleString('es-CL');
+    });
+  }
+  function calcNums(row,soloH,soloM){
+    const esVina=(row[C.circuito]||'').trim()==='Viña del Mar';
+    return TRAMOS_STD.map(t=>esVina&&t.key==='E'?0:calcTramo(row,t,soloH,soloM));
   }
 
-  const pairsTotal=tramosTabla.map(t=>({label:t.label, fn:(row)=>calcTramoRow(row,t,false,false)}));
-  const pairsH    =tramosTabla.map(t=>({label:t.label, fn:(row)=>calcTramoRow(row,t,true, false)}));
-  const pairsM    =tramosTabla.map(t=>({label:t.label, fn:(row)=>calcTramoRow(row,t,false,true )}));
+  function buildTabla(headId,bodyId,soloH,soloM){
+    document.getElementById(headId).innerHTML=
+      '<th>Circuito</th>'+colLabels.map(l=>`<th>${l}</th>`).join('')+'<th>Total</th>';
 
-  renderTablaGenerica('tablaTotalHead','tablaTotalBody',filteredRows,pairsTotal);
-  renderTablaGenerica('tablaHHead',   'tablaHBody',    filteredRows,pairsH);
-  renderTablaGenerica('tablaMHead',   'tablaMBody',    filteredRows,pairsM);
+    const filas=ord.map((row,i)=>{
+      const circ=(row[C.circuito]||'').trim();
+      const celdas=calcCeldas(row,soloH,soloM);
+      const nums=calcNums(row,soloH,soloM);
+      const tot=nums.reduce((a,b)=>a+b,0);
+      return{circ,celdas,nums,tot,i};
+    });
+    const colTots=TRAMOS_STD.map((_,ci)=>filas.reduce((a,f)=>a+f.nums[ci],0));
+    const grandTot=colTots.reduce((a,b)=>a+b,0);
+
+    document.getElementById(bodyId).innerHTML=
+      filas.map(f=>`<tr>
+        <td><span class="circuito-tag"><span class="dotc" style="background:${colorFor(f.i)}"></span>${f.circ}</span></td>
+        ${f.celdas.map(v=>`<td>${v}</td>`).join('')}
+        <td class="col-total">${f.tot.toLocaleString('es-CL')}</td>
+      </tr>`).join('')+
+      `<tr class="row-total"><td>Total</td>
+        ${colTots.map(v=>`<td>${v.toLocaleString('es-CL')}</td>`).join('')}
+        <td class="col-total">${grandTot.toLocaleString('es-CL')}</td>
+      </tr>`;
+  }
+  buildTabla('thTotal','tbTotal',false,false);
+  buildTabla('thH','tbH',true,false);
+  buildTabla('thM','tbM',false,true);
 }
 
-/* ===== TABLAS COMENTARIOS ===== */
-function renderComentarios(filteredRows){
-  const ordenados=[...filteredRows].sort((a,b)=>{
-    const ca=(a[C.circuito]||'').trim(),cb=(b[C.circuito]||'').trim();
-    if(ca==='Viña del Mar') return 1;
-    if(cb==='Viña del Mar') return -1;
-    return ca.localeCompare(cb,'es');
-  });
-
-  function renderComentarioTabla(tbodyId, colIdx){
-    const tbody=document.getElementById(tbodyId);
-    const filas=ordenados.map(r=>{
-      const circ=(r[C.circuito]||'').trim();
-      const txt=(r[colIdx]||'').trim();
-      if(!txt||txt.toLowerCase()==='no'||txt==='-'||txt.toLowerCase()==='sin novedad') return '';
-      return `<tr><td>${circ}</td><td>${txt}</td></tr>`;
+/* ===== COMENTARIOS ===== */
+function renderComentarios(rows){
+  const ord=ordenar(rows);
+  [['tbAspecto',C.aspecto],['tbComentario',C.comentario]].forEach(([id,col])=>{
+    const filas=ord.map(r=>{
+      const c=(r[C.circuito]||'').trim(),t=(r[col]||'').trim();
+      if(!t||t.toLowerCase()==='no'||t==='-'||t.toLowerCase()==='sin novedad') return '';
+      return `<tr><td>${c}</td><td>${t}</td></tr>`;
     }).join('');
-    tbody.innerHTML=filas||`<tr><td colspan="2" style="text-align:center;color:var(--text-dim);padding:20px;">Sin comentarios registrados</td></tr>`;
-  }
-
-  renderComentarioTabla('comentariosU',C.aspecto);
-  renderComentarioTabla('comentariosV',C.comentario);
+    document.getElementById(id).innerHTML=filas||
+      `<tr><td colspan="2" style="text-align:center;color:var(--text-dim);padding:20px;">Sin comentarios</td></tr>`;
+  });
 }
 
-/* ===== KPIs / TOTALES ===== */
-function renderKPIs(filteredRows){
-  // Santiago: suma de indicadores A-E de todos excepto Viña del Mar
-  const stgo=filteredRows.filter(r=>(r[C.circuito]||'').trim()!=='Viña del Mar');
-  const totalStgo=stgo.reduce((acc,row)=>{
-    const ind=calcIndicadores(row);
-    return acc+Object.values(ind).reduce((a,b)=>a+b,0);
-  },0);
-  document.getElementById('totalStgo').textContent=totalStgo.toLocaleString('es-CL');
-
-  // Viña del Mar
-  const vina=filteredRows.find(r=>(r[C.circuito]||'').trim()==='Viña del Mar');
-  if(vina){
-    const ind=calcIndicadores(vina);
-    const tv=Object.values(ind).reduce((a,b)=>a+b,0);
-    document.getElementById('totalVina').textContent=tv.toLocaleString('es-CL');
-  } else {
-    document.getElementById('totalVina').textContent='—';
-  }
+/* ===== KPIs ===== */
+function renderKPIs(rows){
+  const stgo=rows.filter(r=>(r[C.circuito]||'').trim()!=='Viña del Mar');
+  document.getElementById('totalStgo').textContent=
+    stgo.reduce((acc,r)=>acc+totalRow(r),0).toLocaleString('es-CL');
+  const vina=rows.find(r=>(r[C.circuito]||'').trim()==='Viña del Mar');
+  document.getElementById('totalVina').textContent=vina?totalRow(vina).toLocaleString('es-CL'):'—';
 }
 
-/* ===== FECHA ===== */
-function setFecha(){
-  // La fecha se actualiza desde filtrarDatos() con la fecha más reciente de los datos
-  document.getElementById('fechaUltimoSabado').textContent='Cargando…';
-}
-
-/* ===== METODOLOGÍA ===== */
-function renderFormula(){
-  document.getElementById('formulaBand').innerHTML=`
-    <b>Metodología:</b> cada indicador estima la afluencia horaria proyectada a partir de un conteo puntual de 10 minutos,
-    multiplicado por 6 (extrapolación a 1 hora) sobre el promedio de dos ventanas consecutivas de Hombres + Mujeres.
-    Ej. <code>A = 6 × [(H9+M9) + (H10+M10)] / 2</code>.
-    Cuando existe más de un registro para un mismo circuito en la misma fecha, se considera el que presenta la mayor suma bruta de conteos.
-  `;
-}
-
-/* ===== CARGA PRINCIPAL ===== */
+/* ===== CARGA ===== */
 async function cargarDatos(){
   try{
     const res=await fetch(SCRIPT_URL+'?_='+Date.now());
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    const allRows=parseCSV(text);
-    const dataRows=allRows.slice(1).filter(r=>(r[C.circuito]||'').trim()!=='');
-
-    const filteredRows=filtrarDatos(dataRows);
-
-    if(filteredRows.length===0){
-      document.getElementById('chartsGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1;">Aún no hay jornadas registradas para el último domingo.</div>`;
-    } else {
-      renderDonuts(filteredRows);
-      renderAsistencia(filteredRows);
-      renderSexo(filteredRows);
-      renderTablas(filteredRows);
-      renderComentarios(filteredRows);
-      renderKPIs(filteredRows);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const rows=parseCSV(await res.text());
+    const data=rows.slice(1).filter(r=>(r[C.circuito]||'').trim()!=='');
+    const filtered=filtrarDatos(data);
+    if(!filtered.length){
+      document.getElementById('chartsGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1;">Sin datos registrados.</div>`;
+    }else{
+      renderDonuts(filtered);
+      renderAsistencia(filtered);
+      renderSexo(filtered);
+      renderTablas(filtered);
+      renderComentarios(filtered);
+      renderKPIs(filtered);
     }
-
-    document.getElementById('updatedNote').textContent='Última actualización: '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-
-  } catch(err){
-    console.error('Error cargando datos:',err);
-    document.getElementById('chartsGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1;">No se pudo cargar la planilla. (${err.message})</div>`;
+    document.getElementById('updatedNote').textContent=
+      'Última actualización: '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }catch(e){
+    console.error(e);
+    document.getElementById('chartsGrid').innerHTML=
+      `<div class="empty-state" style="grid-column:1/-1;">No se pudo cargar la planilla. (${e.message})</div>`;
   }
 }
 
-/* ===== INIT ===== */
-setFecha();
-renderFormula();
+document.getElementById('formulaBand').innerHTML=
+  `<b>Metodología:</b> cada indicador estima afluencia horaria multiplicando ×6 el promedio de dos ventanas de conteo de 10 min consecutivas (Hombres + Mujeres).
+  Ej. <code>A = 6 × [(H9+M9) + (H10+M10)] / 2</code>.
+  Viña del Mar opera hasta las 13:00 hrs, por lo que solo se calculan los tramos A–D (9:00–13:00).
+  Cuando hay más de un registro por circuito en la misma fecha, se usa el de mayor suma bruta de conteos.`;
+
 cargarDatos();
-setInterval(cargarDatos, REFRESH_MS);
+setInterval(cargarDatos,REFRESH_MS);
 </script>
 </body>
 </html>
