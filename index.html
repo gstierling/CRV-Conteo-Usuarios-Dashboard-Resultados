@@ -333,7 +333,30 @@ function renderAsistencia(rows){
   const labels=ord.map(r=>(r[C.circuito]||'').trim());
   const vals=ord.map(r=>{const e=ASIST_ESCALA[(r[C.asistencia]||'').trim()];return e?e.pct:50;});
   const colors=ord.map(r=>{const e=ASIST_ESCALA[(r[C.asistencia]||'').trim()];return e?e.color:'#facc15';});
-  const tooltipLabels=ord.map(r=>(r[C.asistencia]||'Sin respuesta').trim());
+
+  /* Plugin: línea vertical en x=50 con etiqueta "Parecida" */
+  const lineaParecida={
+    id:'lineaParecida',
+    afterDraw(chart){
+      const{ctx:c,scales:{x,y},chartArea}=chart;
+      const xPos=x.getPixelForValue(50);
+      c.save();
+      c.beginPath();
+      c.moveTo(xPos,chartArea.top);
+      c.lineTo(xPos,chartArea.bottom);
+      c.strokeStyle='rgba(250,204,21,0.55)';
+      c.lineWidth=2;
+      c.setLineDash([6,4]);
+      c.stroke();
+      c.setLineDash([]);
+      c.textAlign='center';
+      c.textBaseline='bottom';
+      c.fillStyle='#facc15';
+      c.font='700 12px Nunito,sans-serif';
+      c.fillText('Parecida',xPos,chartArea.top-2);
+      c.restore();
+    }
+  };
 
   const ctx=document.getElementById('chartAsistencia');if(!ctx)return;
   if(chartAsistencia)chartAsistencia.destroy();
@@ -347,13 +370,20 @@ function renderAsistencia(rows){
         tooltip:{enabled:false}
       },
       scales:{
-        x:{min:0,max:100,ticks:{color:'#8b949e',font:{size:12,family:'Nunito'},callback:v=>v+'%'},
-          grid:{color:'rgba(255,255,255,.06)'}},
+        x:{
+          min:0,max:100,
+          ticks:{
+            color:'#8b949e',font:{size:12,family:'Nunito'},
+            /* Solo mostrar la marca de "Parecida" en 50, sin números */
+            callback:(v)=>v===50?'Parecida':''
+          },
+          grid:{color:(ctx)=>ctx.tick.value===50?'rgba(250,204,21,0.0)':'rgba(255,255,255,.04)'}
+        },
         y:{ticks:{color:'#fff',font:{size:14,weight:'700',family:'Nunito'}},
           grid:{color:'rgba(255,255,255,.04)'}}
       }
-    }
-    /* Sin plugin de etiquetas dentro de barras */
+    },
+    plugins:[lineaParecida]
   });
 }
 
@@ -361,7 +391,6 @@ function renderAsistencia(rows){
 let chartSexo=null;
 function renderSexo(rows){
   const ord=ordenar(rows);
-  /* Columnas brutas H y M — Viña del Mar excluye h13,m13,h1350,m1350 */
   const colsH_std=[C.h8,C.h9,C.h10,C.h11,C.h12,C.h13,C.h1350];
   const colsM_std=[C.m8,C.m9,C.m10,C.m11,C.m12,C.m13,C.m1350];
   const colsH_vina=[C.h8,C.h9,C.h10,C.h11,C.h12];
@@ -380,10 +409,16 @@ function renderSexo(rows){
   datH.push(datH.reduce((a,b)=>a+b,0));
   datM.push(datM.reduce((a,b)=>a+b,0));
 
-  const pctH=datH.map((h,i)=>{const t=h+datM[i];return t>0?Math.round(h/t*1000)/10:0;});
-  const pctM=datM.map((m,i)=>{const t=datH[i]+m;return t>0?Math.round(m/t*1000)/10:0;});
+  /* Redondeo garantizando suma exacta = 100% por fila */
+  const pctH=datH.map((h,i)=>{
+    const t=h+datM[i];
+    if(!t) return 50;
+    const rH=Math.round(h/t*100);
+    return rH; // pctM = 100 - rH, siempre suma 100
+  });
+  const pctM=pctH.map(h=>100-h);
 
-  /* Plugin: % centrado dentro de cada segmento usando getCenterPoint() */
+  /* Plugin: % centrado en cada segmento usando getCenterPoint() */
   const pctPlugin={
     id:'pctPlugin',
     afterDatasetsDraw(chart){
@@ -392,13 +427,10 @@ function renderSexo(rows){
         const meta=chart.getDatasetMeta(di);
         const arr=di===0?pctH:pctM;
         meta.data.forEach((bar,i)=>{
-          const pct=arr[i];if(pct<6)return;
-          // getCenterPoint() devuelve el centro real del elemento renderizado
+          const pct=arr[i];if(pct<5)return;
           const center=bar.getCenterPoint();
           const props=bar.getProps(['width','height'],true);
-          // Para barras horizontales apiladas, 'width' es el ancho del segmento
-          const segW=Math.abs(props.width);
-          if(segW<30)return;
+          if(Math.abs(props.width)<30)return;
           const fs=Math.min(14,Math.max(10,Math.round(Math.abs(props.height)*0.42)));
           c.save();
           c.textAlign='center';c.textBaseline='middle';
